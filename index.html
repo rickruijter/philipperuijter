@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>Woordjes</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Karla:wght@400;500;700;800&display=swap');
+
+:root{
+  --board-1:#1f3d34;
+  --board-2:#16281f;
+  --paper:#efe6c9;
+  --paper-shadow:#d9cba0;
+  --rule:#c3b78f;
+  --ink:#2a2118;
+  --ink-soft:#5a4f3c;
+  --red:#b3402f;
+  --chalk-yellow:#e8c15a;
+  --chalk-white:#f4f1e6;
+  --green-ok:#4c7a55;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(255,255,255,0.05), transparent 55%),
+    linear-gradient(160deg, var(--board-1), var(--board-2));
+  font-family:'Karla', sans-serif;
+  color:var(--chalk-white);
+  padding:28px 16px 60px;
+  display:flex;
+  justify-content:center;
+}
+.wrap{width:100%;max-width:620px;}
+
+header{text-align:center;margin-bottom:6px;}
+h1{
+  font-family:'Caveat', cursive;
+  font-weight:700;
+  font-size:56px;
+  margin:0;
+  color:var(--chalk-white);
+  letter-spacing:0.5px;
+  transform:rotate(-1deg);
+}
+.subtitle{
+  font-size:14px;
+  color:#c9d6cd;
+  margin-top:-6px;
+  font-weight:500;
+}
+.context-bar{
+  display:flex; justify-content:center; align-items:center; gap:10px;
+  margin:6px 0 18px; font-size:13px; color:#c9d6cd;
+}
+.context-bar b{color:var(--chalk-white);}
+.switch-link{
+  background:none; border:none; color:var(--chalk-yellow);
+  text-decoration:underline; font-size:12.5px; cursor:pointer; font-family:'Karla',sans-serif;
+}
+
+/* ---- profile / subject screens ---- */
+.screen{display:none;}
+.screen.active{display:block;}
+.choice-title{
+  text-align:center; font-family:'Caveat',cursive; font-weight:600;
+  font-size:28px; color:var(--chalk-white); margin:18px 0 22px;
+}
+.choice-grid{display:flex; gap:18px; justify-content:center; flex-wrap:wrap; margin-bottom:10px;}
+.choice-card{
+  background:var(--paper); color:var(--ink);
+  border-radius:6px; width:180px; padding:26px 14px;
+  text-align:center; cursor:pointer; border:none;
+  box-shadow:0 2px 0 var(--paper-shadow), 0 10px 22px rgba(0,0,0,0.3);
+  transform:rotate(-1deg);
+  font-family:'Caveat',cursive; font-weight:700; font-size:30px;
+  transition:transform .12s;
+}
+.choice-card:nth-child(2){transform:rotate(1deg);}
+.choice-card:hover{transform:scale(1.04) rotate(0deg);}
+.choice-sub{font-family:'Karla',sans-serif; font-size:12px; font-weight:600; color:var(--ink-soft); margin-top:4px;}
+.back-link{
+  display:block; margin:0 auto 6px; background:none; border:none;
+  color:#c9d6cd; text-decoration:underline; font-size:12.5px; cursor:pointer;
+  font-family:'Karla',sans-serif; text-align:center;
+}
+
+/* ---- side layout (streak / high score flames) ---- */
+.layout{
+  display:grid;
+  grid-template-columns: 108px minmax(280px,620px) 108px;
+  gap:26px; justify-content:center; align-items:start;
+}
+.side{
+  display:flex; flex-direction:column; gap:14px;
+}
+.side-spacer{ visibility:hidden; }
+.main{ min-width:0; }
+@media(max-width:700px){
+  .layout{display:flex; flex-direction:column; align-items:center; grid-template-columns:none;}
+  .side{flex-direction:row; justify-content:center; gap:24px;}
+  .side-spacer{display:none;}
+}
+.flame-card{display:flex; flex-direction:column; align-items:center;}
+.flame-box{position:relative; width:78px; height:96px;}
+.flame-box.small{width:60px; height:76px;}
+.flame-svg{position:absolute; inset:0; width:100%; height:100%; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.35));}
+.flame-num{
+  position:absolute; left:0; right:0; top:40%;
+  text-align:center; font-family:'Karla',sans-serif; font-weight:800; font-size:22px;
+  color:#fff; text-shadow:0 1px 3px rgba(0,0,0,0.45);
+}
+.flame-box.small .flame-num{font-size:17px; top:38%;}
+.flame-lbl{
+  margin-top:2px; font-size:11px; font-weight:700; color:#c9d6cd; text-align:center;
+}
+
+/* ---- overview panel (goed/fout/geleerd) ---- */
+.overview{
+  display:flex; justify-content:center; gap:14px; flex-wrap:wrap;
+  margin:10px 0 20px;
+}
+.stat{
+  background:rgba(244,241,230,0.07);
+  border:1px solid rgba(244,241,230,0.18);
+  border-radius:10px;
+  padding:8px 14px;
+  text-align:center;
+  min-width:74px;
+}
+.stat .num{font-size:20px; font-weight:800; color:var(--chalk-white); display:block;}
+.stat .lbl{font-size:10.5px; color:#c9d6cd; font-weight:600; letter-spacing:0.2px;}
+.stat.streak .num{color:var(--chalk-yellow);}
+.stat.high .num{color:#e8b7a2;}
+.stat.good .num{color:#a8d4ae;}
+.stat.bad .num{color:#e8a79a;}
+
+/* tabs */
+.tabs{display:flex; gap:6px; justify-content:center; margin-bottom:12px; flex-wrap:wrap;}
+.tab{
+  font-family:'Karla',sans-serif; font-weight:700; font-size:13px;
+  background:transparent; border:2px solid rgba(244,241,230,0.35);
+  color:var(--chalk-white); padding:7px 14px; border-radius:999px; cursor:pointer;
+  transition:background .15s, border-color .15s;
+}
+.tab:hover{border-color:rgba(244,241,230,0.7);}
+.tab.active{background:var(--chalk-white); color:var(--board-2); border-color:var(--chalk-white);}
+
+.direction{
+  display:flex; justify-content:center; align-items:center; gap:10px;
+  margin-bottom:20px; font-size:13px; color:#cdd8d2;
+}
+.direction .seg{display:flex; border:1px solid rgba(244,241,230,0.35); border-radius:8px; overflow:hidden;}
+.direction .seg button{
+  font-family:'Karla',sans-serif; font-size:12.5px; font-weight:700;
+  background:transparent; color:#cdd8d2; border:none; padding:6px 11px; cursor:pointer;
+}
+.direction .seg button.on{background:var(--chalk-yellow); color:#3a2c0a;}
+
+.card-area{perspective:1200px; margin-bottom:18px;}
+.card{
+  position:relative; background:var(--paper); color:var(--ink);
+  border-radius:6px; min-height:230px; padding:30px 26px 24px;
+  box-shadow:0 2px 0 var(--paper-shadow), 0 14px 30px rgba(0,0,0,0.35);
+  transform:rotate(-0.6deg);
+  background-image: repeating-linear-gradient(to bottom, transparent 0px, transparent 33px, var(--rule) 34px);
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  text-align:center; gap:14px;
+}
+.card::before{
+  content:""; position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+  width:26px; height:18px; background:#b7cdd8; border-radius:3px; opacity:0.8;
+  box-shadow:0 1px 2px rgba(0,0,0,0.25);
+}
+.tag{font-size:11px; font-weight:700; letter-spacing:0.3px; color:var(--ink-soft); text-transform:lowercase;}
+.prompt-word{font-family:'Caveat', cursive; font-weight:700; font-size:42px; line-height:1.05; color:var(--ink);}
+.example{font-size:13.5px; color:var(--ink-soft); font-style:italic; max-width:440px;}
+.reveal{font-size:24px; font-weight:700; color:var(--green-ok); font-family:'Caveat', cursive;}
+.hint-btn{background:none; border:none; color:var(--ink-soft); text-decoration:underline; font-size:12.5px; cursor:pointer; font-family:'Karla',sans-serif;}
+.done-msg{font-size:15px; color:var(--ink-soft); max-width:400px;}
+
+.flash-actions{display:flex; gap:10px; justify-content:center; margin-bottom:8px;}
+.btn{font-family:'Karla',sans-serif; font-weight:700; font-size:14px; border:none; border-radius:8px; padding:11px 18px; cursor:pointer;}
+.btn-flip{background:var(--chalk-white); color:var(--board-2);}
+.btn-know{background:var(--green-ok); color:#fff;}
+.btn-dontknow{background:var(--red); color:#fff;}
+.btn:disabled{opacity:0.4; cursor:default;}
+
+.options{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;}
+@media(max-width:480px){.options{grid-template-columns:1fr;}}
+.opt{
+  font-family:'Karla',sans-serif; font-size:14px; font-weight:600;
+  background:rgba(244,241,230,0.08); border:1.5px solid rgba(244,241,230,0.3);
+  color:var(--chalk-white); padding:12px 10px; border-radius:8px; cursor:pointer; text-align:left;
+}
+.opt:hover{border-color:var(--chalk-yellow);}
+.opt.correct{background:var(--green-ok); border-color:var(--green-ok); color:#fff;}
+.opt.wrong{background:var(--red); border-color:var(--red); color:#fff;}
+.opt:disabled{cursor:default;}
+
+.type-row{display:flex; gap:8px; justify-content:center; margin-bottom:8px;}
+.type-row input{
+  font-family:'Karla',sans-serif; font-size:15px; padding:10px 12px; border-radius:8px;
+  border:1.5px solid rgba(244,241,230,0.4); background:rgba(244,241,230,0.08); color:var(--chalk-white); width:220px;
+}
+.type-row input:focus{outline:none; border-color:var(--chalk-yellow);}
+.feedback{text-align:center; font-size:13.5px; min-height:18px; margin-bottom:10px;}
+.feedback.ok{color:#a8d4ae;}
+.feedback.bad{color:#e8a79a;}
+.round-msg{text-align:center; font-size:12.5px; color:var(--chalk-yellow); min-height:16px; margin-bottom:4px;}
+
+details{margin-top:24px; background:rgba(244,241,230,0.06); border:1px solid rgba(244,241,230,0.2); border-radius:10px; padding:6px 14px 14px;}
+summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; color:var(--chalk-white);}
+.add-row{display:flex; gap:6px; flex-wrap:wrap; margin:10px 0;}
+.add-row input{
+  font-family:'Karla',sans-serif; font-size:13.5px; padding:8px 10px; border-radius:7px;
+  border:1.5px solid rgba(244,241,230,0.35); background:rgba(244,241,230,0.08); color:var(--chalk-white);
+  flex:1 1 120px; min-width:100px;
+}
+.add-row button{background:var(--chalk-yellow); color:#3a2c0a; border:none; border-radius:7px; font-weight:700; padding:8px 14px; cursor:pointer;}
+.list-table{width:100%; border-collapse:collapse; font-size:13px; margin-top:8px;}
+.list-table th{text-align:left; color:#c9d6cd; font-weight:700; font-size:11.5px; padding:4px 6px; border-bottom:1px solid rgba(244,241,230,0.2);}
+.list-table td{padding:5px 6px; border-bottom:1px solid rgba(244,241,230,0.08); color:var(--chalk-white);}
+.list-table td.rm{cursor:pointer; color:#e8a79a; text-align:center; font-weight:700;}
+.list-table td.status{text-align:center; width:26px;}
+.list-table td.mastered{text-align:center; width:60px; font-size:11px; color:var(--chalk-yellow); font-weight:700;}
+.count{color:#c9d6cd; font-size:12px; margin-left:6px; font-weight:400;}
+.reset-link{background:none; border:none; color:#e8a79a; text-decoration:underline; font-size:12px; cursor:pointer; margin-top:10px; font-family:'Karla',sans-serif;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Woordjes</h1>
+  </header>
+
+  <!-- SCREEN 1: profiel -->
+  <div class="screen" id="screenProfile">
+    <div class="choice-title">Wie ben jij?</div>
+    <div class="choice-grid">
+      <button class="choice-card" data-profile="philippe">Philippe</button>
+      <button class="choice-card" data-profile="cezane">C&eacute;zane</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: vak (per profiel andere keuzes) -->
+  <div class="screen" id="screenSubject">
+    <button class="back-link" id="backToProfile">&lsaquo; terug</button>
+    <div class="choice-title">Wat wil je oefenen?</div>
+    <div class="choice-grid" id="subjectChoices"></div>
+  </div>
+
+  <!-- SCREEN 3: trainer -->
+  <div class="screen" id="screenTrainer">
+    <div class="context-bar">
+      <span id="contextLabel"></span>
+      <button class="switch-link" id="switchUser">wissel van gebruiker / vak</button>
+    </div>
+
+    <div class="layout">
+      <div class="side">
+        <div class="flame-card">
+          <div class="flame-box">
+            <svg viewBox="0 0 100 130" class="flame-svg" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="fOuter" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stop-color="#b3402f"/>
+                  <stop offset="100%" stop-color="#e8703a"/>
+                </linearGradient>
+                <linearGradient id="fInner" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stop-color="#e8a23a"/>
+                  <stop offset="100%" stop-color="#f5d76e"/>
+                </linearGradient>
+              </defs>
+              <path fill="url(#fOuter)" d="M50,10 C20,45 10,75 25,100 C20,85 35,80 38,90 C30,105 45,120 55,122 C80,118 92,95 82,65 C88,78 82,88 76,90 C80,70 65,50 58,35 C62,48 55,55 50,48 C56,30 55,18 50,10 Z"/>
+              <path fill="url(#fInner)" d="M50,55 C40,68 38,82 48,95 C46,88 54,86 56,90 C52,100 58,110 65,110 C76,106 80,92 72,80 C74,86 70,90 67,90 C70,80 62,68 58,60 C60,66 56,68 54,64 C57,58 54,55 50,55 Z"/>
+            </svg>
+            <div class="flame-num" id="statStreak">0</div>
+          </div>
+          <div class="flame-lbl">streak</div>
+        </div>
+
+        <div class="flame-card">
+          <div class="flame-box small">
+            <svg viewBox="0 0 100 130" class="flame-svg" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="fGold" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stop-color="#8a6a2a"/>
+                  <stop offset="100%" stop-color="#e8c15a"/>
+                </linearGradient>
+              </defs>
+              <path fill="url(#fGold)" d="M50,10 C20,45 10,75 25,100 C20,85 35,80 38,90 C30,105 45,120 55,122 C80,118 92,95 82,65 C88,78 82,88 76,90 C80,70 65,50 58,35 C62,48 55,55 50,48 C56,30 55,18 50,10 Z"/>
+            </svg>
+            <div class="flame-num" id="statHigh">0</div>
+          </div>
+          <div class="flame-lbl">high score</div>
+        </div>
+      </div>
+
+      <div class="main">
+        <div class="overview">
+          <div class="stat good"><span class="num" id="statGood">0</span><span class="lbl">goed (ronde)</span></div>
+          <div class="stat bad"><span class="num" id="statBad">0</span><span class="lbl">fout (ronde)</span></div>
+          <div class="stat"><span class="num" id="statMastered">0/0</span><span class="lbl">geleerd</span></div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab" data-mode="flash">Flashcards</button>
+          <button class="tab" data-mode="mcq">Meerkeuze</button>
+          <button class="tab" data-mode="type">Typen</button>
+        </div>
+
+        <div class="direction">
+          <span>richting:</span>
+          <div class="seg">
+            <button data-dir="en-nl" id="dirEnNl">EN &rarr; NL</button>
+            <button data-dir="nl-en" id="dirNlEn">NL &rarr; EN</button>
+            <button data-dir="mix">Mix</button>
+          </div>
+        </div>
+
+        <div class="round-msg" id="roundMsg"></div>
+
+        <div class="card-area">
+          <div class="card" id="card">
+            <div class="tag" id="cardTag">woord</div>
+            <div class="prompt-word" id="promptWord"></div>
+            <div id="cardBody"></div>
+          </div>
+        </div>
+
+        <div id="controls"></div>
+        <div class="feedback" id="feedback"></div>
+
+        <details>
+          <summary id="manageLabel">Woordenlijst beheren <span class="count" id="wordCount"></span></summary>
+          <div class="add-row">
+            <input id="newEn" placeholder="Engels/Frans woord" />
+            <input id="newNl" placeholder="Nederlandse vertaling" />
+            <span id="exampleField"><input id="newEx" placeholder="Voorbeeldzin (optioneel)" /></span>
+            <button id="addWordBtn">Toevoegen</button>
+          </div>
+          <table class="list-table" id="wordTable"></table>
+          <button class="reset-link" id="resetProgress">Voortgang &amp; streak resetten</button>
+        </details>
+      </div>
+
+      <div class="side-spacer" aria-hidden="true"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- base woordenlijst (uit de Study box, alleen voor Philippe/Engels) ---------- */
+const BASE_WORDS = [
+  ["arts and design","beeldende vorming","**Arts and design** is a creative subject."],
+  ["assembly","samenkomst","There is a school **assembly** in the canteen today."],
+  ["biology","biologie","**Biology** is the study of living things."],
+  ["corridor; hallway","gang","The classroom is at the end of the **corridor**."],
+  ["geography","aardrijkskunde","In **geography** we study the world."],
+  ["head teacher","(school)directeur","The **head teacher** is in charge of the school."],
+  ["history","geschiedenis","In **history** we study events in the past."],
+  ["mathematics; maths","wiskunde","We study numbers and shapes in **maths**."],
+  ["paragraph","alinea","Read the second **paragraph** of this text."],
+  ["(first) period","(eerste) uur","She is my **first period** teacher."],
+  ["physical education; PE","lichamelijke opvoeding; gym","We have **PE** on Mondays; we usually play football."],
+  ["secondary school","middelbare school","She's 13, so she goes to **secondary school**."],
+  ["story","verhaal","I wrote a **story** for English."],
+  ["to take notes","aantekeningen maken","I always **take notes** of what the teacher says."],
+  ["to take out","pakken","You have to **take out** your textbooks and put them on the table."],
+  ["to understand","begrijpen","Try to **understand** what the teacher is saying."],
+  ["year 7","brugklas","Tomorrow I start in **year 7**. I'm a bit nervous."],
+  ["desk","bureau","Put your books on your **desk**."],
+  ["to think","denken; nadenken","Let's **think** about this problem."],
+  ["teacher","docent","He is our maths **teacher**."],
+  ["pencil case","etui","I have a new **pencil case**."],
+  ["rubber; eraser","gum","Use a **rubber** to erase your mistakes."],
+  ["to do homework","huiswerk maken","I am going to **do** my **homework** now."],
+  ["classmate","klasgenoot; klasgenote","Jim is my favourite **classmate**."],
+  ["classroom","klaslokaal","We have English in **classroom** 1.01."],
+  ["student","leerling","We have a new **student** in our class."],
+  ["to learn","leren","Today we are going to **learn** about verbs."],
+  ["to study","leren; bestuderen","I always **study** a lot before a test."],
+  ["to teach","leren; onderwijzen","She wants to **teach** English in secondary school."],
+  ["lesson","les","This **lesson** is about numbers."],
+  ["pen","pen","Use a **pen** to take notes."],
+  ["pencil","potlood","Use a **pencil** for your maths."],
+  ["backpack","rugzak","My **backpack** is heavy."],
+  ["exercise book","schrift","Take notes in your **exercise book**."],
+  ["textbook","tekstboek","This is my geography **textbook**."],
+  ["subject","vak","English is my favourite **subject**."],
+  ["appearance","uiterlijk","Your **appearance** is the way that you look."],
+  ["bald","kaal","My uncle hasn't got hair. He is **bald**."],
+  ["complexion","gezichtskleur","Red heads usually have a light **complexion**."],
+  ["contact lenses","contactlenzen","I don't like glasses, so I wear **contact lenses**."],
+  ["good-looking","knap (uiterlijk)","He is **good-looking**."],
+  ["moustache","snor","My dad's got a **moustache**."],
+  ["quite","nogal","I'm **quite** tall."],
+  ["wavy","golvend; met slag","She's got **wavy** hair."],
+  ["wrinkles","rimpels","My granny's got **wrinkles**."],
+  ["to describe","beschrijven","You have to **describe** your appearance."],
+  ["braces","beugel","My teeth are crooked, so I've got **braces**."],
+  ["to look like","eruitzien","I don't know him. What does he **look like**?"],
+  ["pierced ears","gaatjes in oren","She's got **pierced ears**, but she never wears earrings."],
+  ["to smile","glimlachen","Can you **smile** for the photo?"],
+  ["to recognise","herkennen","I'm sorry, I didn't **recognise** you."],
+  ["short","kort","He went to the hairdresser; his hair is **short** now."],
+  ["long","lang","I wear my **long** hair in a ponytail."],
+  ["ugly","lelijk","That is an **ugly** dog."],
+  ["earrings","oorbellen","She's got pierced ears, but she never wears **earrings**."],
+  ["ponytail","paardenstaart","I wear my long hair in a **ponytail**."],
+  ["spot","pukkel","Don't take my photo. I've got a **spot** on my nose."],
+  ["straight","steil","I love curls, but I've got **straight** hair."],
+  ["to change","veranderen","You look nice. Don't **change** the way you look."],
+  ["American","Amerikaans","I am **American**."],
+  ["British","Brits","He is **British**."],
+  ["Canadian","Canadees","She is **Canadian**."],
+  ["common","gemeenschappelijk","English is our **common** language."],
+  ["Commonwealth of Nations","Gemenebest van Naties","Canada is a member of the **Commonwealth of Nations**."],
+  ["Dutch","Nederlands","He speaks **Dutch**."],
+  ["election","verkiezing","You can vote in an **election**."],
+  ["English","Engels","He's from the United Kingdom, so he speaks **English**."],
+  ["French","Frans","She's from France, so she speaks **French**."],
+  ["German","Duits","He's from Germany, so he speaks **German**."],
+  ["to invite","uitnodigen","I'll **invite** you to my party."],
+  ["Italian","Italiaans","He's from Italy, so he speaks **Italian**."],
+  ["nation","volk","The **nation** is celebrating."],
+  ["national anthem","volkslied","We all sing the **national anthem**."],
+  ["population","bevolking","The world **population** has reached 7 billion people."],
+  ["to represent","vertegenwoordigen","They **represent** their company at the meeting."],
+  ["Spanish","Spaans","He speaks **Spanish**."],
+  ["to unite","verenigen","Let's **unite** to protest against the war."],
+  ["to accept","accepteren","We **accept** your invitation."],
+  ["Australia","Australi\u00eb","He lives in **Australia**."],
+  ["to call","bellen","I will **call** you on your mobile."],
+  ["culture","cultuur","It's a different **culture**."],
+  ["Germany","Duitsland","**Germany** is a country next to the Netherlands."],
+  ["England","Engeland","**England** is part of the United Kingdom."],
+  ["France","Frankrijk","**France** is a country in Europe."],
+  ["to agree","het eens zijn","You're right. I **agree** with you."],
+  ["Italy","Itali\u00eb","**Italy** is a country in southern Europe."],
+  ["country","land","France is a **country** in Europe."],
+  ["to let (someone) know","meedelen; laten weten","**Let** me **know** if you're going to the party."],
+  ["to bring","meenemen","Let's **bring** some food to the park."],
+  ["the Netherlands","Nederland","**The Netherlands** is a country next to Germany."],
+  ["Spain","Spanje","**Spain** is a country next to Portugal."],
+  ["the United Kingdom (UK)","Verenigd Koninkrijk","London is the capital of **the United Kingdom**."],
+  ["the United States of America (USA)","Verenigde Staten","New York is a city in **the United States of America**."],
+  ["flag","vlag","The Dutch **flag** is red, white and blue."],
+  ["world","wereld","The **world** is a big place."],
+  ["to be related to","familie zijn van","I'm **related to** everyone in my family."],
+  ["to dislike","niet houden van","Things I really don't enjoy are things I **dislike**."],
+  ["divorced","gescheiden","She isn't married anymore, she's **divorced**."],
+  ["great-","overgroot-","My mum's granny is my **great**-grandmother."],
+  ["to look alike","op elkaar lijken","My brother and I **look alike**."],
+  ["married","getrouwd","My parents got **married** in 2002."],
+  ["middle","middelste","In between two things is the **middle**."],
+  ["oldest","oudste","You're the **oldest** if everyone else is younger."],
+  ["only","enig","An **only** child doesn't have siblings."],
+  ["sibling","broer; zus","I have two **siblings**: an older brother and sister."],
+  ["twins","tweeling","**Twins** are siblings born around the same time."],
+  ["daughter","dochter","My sibling's **daughter** is my niece."],
+  ["to die","doodgaan","My dog is sick. It is going to **die**."],
+  ["to be born","geboren worden","Is the baby going to **be born** today?"],
+  ["family","gezin; familie","The people I am related to are my **family**."],
+  ["grandparents","grootouders","My mum's parents are my **grandparents**."],
+  ["younger","jonger","Anyone born after me is **younger**."],
+  ["cousin (male and female)","neef; nicht (kind van een oom of tante)","My aunt's child is my **cousin**."],
+  ["nephew","neef (zoon van een broer of zus)","My sibling's son is my **nephew**."],
+  ["niece","nicht (dochter van een broer of zus)","My sibling's daughter is my **niece**."],
+  ["uncle","oom","My father's brother is my **uncle**."],
+  ["older","ouder","He was born first, so he is **older**."],
+  ["parents","ouders","My mum and dad are my **parents**."],
+  ["step-","stief-","My mum's husband's daughter is my **step**sister."],
+  ["aunt","tante","My mum's sister is my **aunt**."],
+  ["to live","wonen","I **live** with my family."],
+  ["son","zoon","My sibling's **son** is my nephew."]
+];
+const MASTERY_TARGET = 5;
+
+/* ---------- basiswoordenlijst voor Philippe (Frans, Unit\u00e9 1, bladzijde 1) ---------- */
+const FRENCH_WORDS = [
+  ["Bonjour","Dag",""],
+  ["Bonsoir","Goedenavond",""],
+  ["Au revoir","Tot ziens",""],
+  ["\u00e0 plus","Tot later",""],
+  ["\u00e7a va","Hoe gaat het?; Het gaat goed",""],
+  ["\u00e7a va bien","Het gaat goed",""],
+  ["Merci","Bedankt",""],
+  ["Le gar\u00e7on","De jongen",""],
+  ["La fille","Het meisje",""],
+  ["Je m'appelle (s'appeler)","Ik heet",""],
+  ["J'habite (habiter)","Ik woon",""],
+  ["Monsieur","Meneer",""],
+  ["Madame","Mevrouw",""],
+  ["Il y a","Er is; er zijn",""],
+  ["C'est","Het is",""],
+  ["O\u00f9","Waar",""],
+  ["L'ami","De vriend",""],
+  ["L'amie","De vriendin",""],
+  ["Le quartier","De wijk",""],
+  ["L'\u00e9cole","De school",""],
+  ["Le pays","Het land",""],
+  ["La ville","De stad",""],
+  ["Le village","Het dorp",""],
+  ["La rue","De straat",""],
+  ["Et toi?","En jij?",""],
+  ["Moi?","Ik?",""]
+];
+
+/* ---------- basiswoordenlijst voor C\u00e9zane (Engels, groep 7 niveau) ---------- */
+const CEZANE_WORDS = [
+  ["one","een","I have **one** brother."],
+  ["two","twee","She has **two** cats."],
+  ["three","drie","We eat **three** apples."],
+  ["four","vier","There are **four** chairs."],
+  ["five","vijf","I count to **five**."],
+  ["six","zes","The bus leaves at **six** o'clock."],
+  ["seven","zeven","A week has **seven** days."],
+  ["eight","acht","We start school at **eight**."],
+  ["nine","negen","The film starts at **nine**."],
+  ["ten","tien","I can count to **ten**."],
+  ["red","rood","My bike is **red**."],
+  ["blue","blauw","The sky is **blue**."],
+  ["green","groen","Grass is **green**."],
+  ["yellow","geel","The sun looks **yellow**."],
+  ["black","zwart","My cat is **black**."],
+  ["white","wit","Snow is **white**."],
+  ["orange","oranje","I like **orange** juice."],
+  ["pink","roze","She wears a **pink** dress."],
+  ["Monday","maandag","We have swimming on **Monday**."],
+  ["Tuesday","dinsdag","I have music on **Tuesday**."],
+  ["Wednesday","woensdag","We play football on **Wednesday**."],
+  ["Thursday","donderdag","The library is open on **Thursday**."],
+  ["Friday","vrijdag","School finishes early on **Friday**."],
+  ["Saturday","zaterdag","We go shopping on **Saturday**."],
+  ["Sunday","zondag","We visit grandma on **Sunday**."],
+  ["January","januari","My birthday is in **January**."],
+  ["February","februari","It is cold in **February**."],
+  ["March","maart","Spring starts in **March**."],
+  ["April","april","It often rains in **April**."],
+  ["May","mei","Flowers grow in **May**."],
+  ["June","juni","Summer holidays start in **June**."],
+  ["July","juli","We go on holiday in **July**."],
+  ["August","augustus","It is hot in **August**."],
+  ["September","september","School starts again in **September**."],
+  ["October","oktober","Leaves fall in **October**."],
+  ["November","november","It gets dark early in **November**."],
+  ["December","december","We celebrate Christmas in **December**."],
+  ["spring","lente","Flowers grow in **spring**."],
+  ["summer","zomer","**Summer** is my favourite season."],
+  ["autumn","herfst","The leaves turn brown in **autumn**."],
+  ["winter","winter","It snows in **winter**."],
+  ["sun","zon","The **sun** is shining today."],
+  ["rain","regen","Take an umbrella, there is **rain**."],
+  ["wind","wind","The **wind** is very strong."],
+  ["snow","sneeuw","We play in the **snow**."],
+  ["mother","moeder","My **mother** cooks dinner."],
+  ["father","vader","My **father** drives the car."],
+  ["sister","zus","I have one **sister**."],
+  ["brother","broer","My **brother** plays football."],
+  ["grandmother","oma","My **grandmother** bakes cookies."],
+  ["grandfather","opa","My **grandfather** reads the newspaper."],
+  ["baby","baby","The **baby** is sleeping."],
+  ["head","hoofd","My **head** hurts."],
+  ["hair","haar","She has long **hair**."],
+  ["eye","oog","He has one blue **eye**."],
+  ["ear","oor","Rabbits have long **ears**."],
+  ["nose","neus","My **nose** is cold."],
+  ["mouth","mond","Open your **mouth**, please."],
+  ["hand","hand","Wash your **hands** before dinner."],
+  ["dog","hond","My **dog** likes to play."],
+  ["cat","kat","The **cat** is sleeping on the sofa."],
+  ["bird","vogel","A **bird** is singing in the tree."],
+  ["fish","vis","We have three **fish** in a tank."],
+  ["horse","paard","She can ride a **horse**."],
+  ["cow","koe","The **cow** gives milk."],
+  ["pig","varken","The **pig** lives on the farm."],
+  ["sheep","schaap","The **sheep** has white wool."],
+  ["rabbit","konijn","The **rabbit** hops in the garden."],
+  ["mouse","muis","A small **mouse** ran under the table."],
+  ["bread","brood","I eat **bread** for breakfast."],
+  ["cheese","kaas","This sandwich has **cheese** on it."],
+  ["milk","melk","I drink **milk** every morning."],
+  ["water","water","Please drink some **water**."],
+  ["apple","appel","I eat an **apple** every day."],
+  ["banana","banaan","The monkey eats a **banana**."],
+  ["egg","ei","We eat an **egg** for breakfast."],
+  ["meat","vlees","He doesn't eat **meat**."],
+  ["cake","taart","We baked a birthday **cake**."],
+  ["chocolate","chocolade","I love **chocolate**."],
+  ["shirt","shirt","He is wearing a blue **shirt**."],
+  ["trousers","broek","My **trousers** are too long."],
+  ["dress","jurk","She wears a red **dress**."],
+  ["shoes","schoenen","Put on your **shoes**."],
+  ["socks","sokken","My **socks** are wet."],
+  ["jacket","jas","Take your **jacket**, it's cold."],
+  ["hat","muts","He wears a warm **hat**."],
+  ["skirt","rok","She has a green **skirt**."],
+  ["house","huis","We live in a big **house**."],
+  ["room","kamer","My **room** is upstairs."],
+  ["kitchen","keuken","Mum is cooking in the **kitchen**."],
+  ["bedroom","slaapkamer","I sleep in my **bedroom**."],
+  ["table","tafel","Put the plates on the **table**."],
+  ["chair","stoel","Sit on the **chair**."],
+  ["bed","bed","I go to **bed** at eight."],
+  ["door","deur","Please close the **door**."],
+  ["book","boek","I am reading a **book**."],
+  ["ruler","liniaal","Use a **ruler** to draw a line."],
+  ["bag","tas","My school **bag** is heavy."],
+  ["scissors","schaar","Use the **scissors** to cut paper."],
+  ["glue","lijm","Use **glue** to stick the paper."],
+  ["eraser","gum","Can I borrow your **eraser**?"],
+  ["car","auto","We go by **car**."],
+  ["bus","bus","I take the **bus** to school."],
+  ["train","trein","The **train** is late today."],
+  ["bike","fiets","I ride my **bike** every day."],
+  ["boat","boot","We sailed on a small **boat**."],
+  ["football","voetbal","He plays **football** on Saturday."],
+  ["swimming","zwemmen","We go **swimming** every Monday."],
+  ["running","rennen","**Running** makes me tired."],
+  ["reading","lezen","**Reading** is my favourite hobby."],
+  ["drawing","tekenen","She loves **drawing** animals."],
+  ["big","groot","The elephant is very **big**."],
+  ["small","klein","The mouse is very **small**."],
+  ["tall","lang","My brother is very **tall**."],
+  ["short","kort","She has **short** hair."],
+  ["happy","blij","I am very **happy** today."],
+  ["sad","verdrietig","He looks a bit **sad**."],
+  ["hot","heet","The soup is very **hot**."],
+  ["cold","koud","It is **cold** outside."],
+  ["fast","snel","The car drives very **fast**."],
+  ["slow","langzaam","The turtle is very **slow**."],
+  ["good","goed","This cake tastes **good**."],
+  ["bad","slecht","The weather is **bad** today."],
+  ["to be","zijn","I want to **be** a teacher."],
+  ["to have","hebben","I **have** two brothers."],
+  ["to go","gaan","We **go** to school by bike."],
+  ["to play","spelen","Let's **play** a game."],
+  ["to eat","eten","I **eat** breakfast at seven."],
+  ["to drink","drinken","Please **drink** your milk."],
+  ["to see","zien","I can **see** the mountains."],
+  ["to hear","horen","Can you **hear** the birds?"],
+  ["to walk","lopen","We **walk** to school together."],
+  ["to run","rennen","The dog likes to **run**."],
+  ["to swim","zwemmen","Fish can **swim** fast."],
+  ["to sleep","slapen","Babies **sleep** a lot."],
+  ["who","wie","**Who** is that boy?"],
+  ["what","wat","**What** is your name?"],
+  ["where","waar","**Where** do you live?"],
+  ["when","wanneer","**When** is your birthday?"],
+  ["why","waarom","**Why** are you laughing?"],
+  ["how","hoe","**How** old are you?"],
+  ["in","in","The cat is **in** the box."],
+  ["on","op","The book is **on** the table."],
+  ["under","onder","The ball rolled **under** the bed."],
+  ["behind","achter","The dog is hiding **behind** the tree."],
+  ["hello","hallo","**Hello**, how are you?"],
+  ["goodbye","tot ziens","We said **goodbye** and left."],
+  ["please","alsjeblieft","Can I have some water, **please**?"],
+  ["thank you","dank je wel","**Thank you** for the present."],
+  ["yes","ja","**Yes**, I agree with you."]
+];
+
+/* ---------- helpers ---------- */
+function altForms(str){
+  return str.split(';').map(s=>s.replace(/\(.*?\)/g,'').replace(/\s+/g,' ').trim()).filter(Boolean);
+}
+function normalize(str){
+  return str.toLowerCase().replace(/^to\s+/,'')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+}
+function renderExample(ex, mask){
+  if(!ex) return '';
+  if(mask){
+    return ex.replace(/\*\*(.*?)\*\*/g, (m, word) => '<b>' + '&#9619;'.repeat(Math.max(word.length,3)) + '</b>');
+  }
+  return ex.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+}
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function wordId(w){ return w.en+'|'+w.nl; }
+
+/* ---------- app state ---------- */
+let profile = null;      // 'philippe' | 'cezane'
+let subject = null;      // 'english' | 'french'
+let contextId = null;    // 'philippe-english' | 'philippe-french' | 'cezane-english'
+
+let customWords = [];
+let words = [];
+let wordStats = {};      // id -> {enNl:0, nlEn:0, lastResult:null}
+let streak = 0, highScore = 0, roundOk = 0, roundBad = 0;
+
+let mode = 'flash';
+let direction = 'en-nl';
+let queue = [];
+let currentIndex = 0;
+let current = null;
+let currentDir = 'en-nl';
+let flashRevealed = false;
+
+/* ---------- context configuratie (labels per vak) ---------- */
+const SUBJECTS_PER_PROFILE = {
+  philippe: [
+    {key:'english', label:'Engels'},
+    {key:'french', label:'Frans'}
+  ],
+  cezane: [
+    {key:'english', label:'Engels'}
+  ]
+};
+const CONTEXT_CONFIG = {
+  'philippe-english': {aLabel:'Engels', bLabel:'Nederlands', hasExample:true, itemLabel:'woorden',
+    manageLabel:'Woordenlijst beheren',
+    emptyMsg:'Voeg hieronder bij "Woordenlijst beheren" je eigen woorden toe om te beginnen.'},
+  'philippe-french': {aLabel:'Frans', bLabel:'Nederlands', hasExample:true, itemLabel:'woorden',
+    manageLabel:'Woordenlijst beheren',
+    emptyMsg:'Voeg hieronder bij "Woordenlijst beheren" je eigen woorden toe om te beginnen.'},
+  'cezane-english': {aLabel:'Engels', bLabel:'Nederlands', hasExample:true, itemLabel:'woorden',
+    manageLabel:'Woordenlijst beheren',
+    emptyMsg:'Voeg hieronder bij "Woordenlijst beheren" je eigen woorden toe om te beginnen.'}
+};
+function getConfig(){ return CONTEXT_CONFIG[contextId] || CONTEXT_CONFIG['philippe-english']; }
+
+function getStats(id){
+  if(!wordStats[id]) wordStats[id] = {enNl:0, nlEn:0, lastResult:null};
+  return wordStats[id];
+}
+function isMastered(w){
+  const s = getStats(wordId(w));
+  return s.enNl >= MASTERY_TARGET && s.nlEn >= MASTERY_TARGET;
+}
+
+/* ---------- screens ---------- */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+document.querySelectorAll('#screenProfile .choice-card').forEach(btn=>{
+  btn.onclick = ()=>{
+    profile = btn.dataset.profile;
+    const subs = SUBJECTS_PER_PROFILE[profile];
+    if(subs.length === 1){
+      subject = subs[0].key;
+      enterTrainer();
+    } else {
+      renderSubjectChoices();
+      showScreen('screenSubject');
+    }
+  };
+});
+document.getElementById('backToProfile').onclick = ()=> showScreen('screenProfile');
+
+function renderSubjectChoices(){
+  const wrap = document.getElementById('subjectChoices');
+  wrap.innerHTML = '';
+  SUBJECTS_PER_PROFILE[profile].forEach(s=>{
+    const btn = document.createElement('button');
+    btn.className = 'choice-card';
+    btn.textContent = s.label;
+    btn.onclick = ()=>{ subject = s.key; enterTrainer(); };
+    wrap.appendChild(btn);
+  });
+}
+
+document.getElementById('switchUser').onclick = ()=>{
+  profile = null; subject = null; contextId = null;
+  showScreen('screenProfile');
+};
+
+async function enterTrainer(){
+  contextId = profile + '-' + subject;
+  const cfg = getConfig();
+  const subjectLabel = SUBJECTS_PER_PROFILE[profile].find(s=>s.key===subject).label;
+  const label = (profile==='philippe' ? 'Philippe' : 'C\u00e9zane') + ' \u2014 ' + subjectLabel;
+  document.getElementById('contextLabel').textContent = label;
+
+  document.getElementById('dirEnNl').textContent = cfg.aLabel + ' \u2192 ' + cfg.bLabel;
+  document.getElementById('dirNlEn').textContent = cfg.bLabel + ' \u2192 ' + cfg.aLabel;
+  document.getElementById('manageLabel').innerHTML = cfg.manageLabel + ' <span class="count" id="wordCount"></span>';
+  document.getElementById('newEn').placeholder = cfg.aLabel;
+  document.getElementById('newNl').placeholder = cfg.bLabel;
+  document.getElementById('exampleField').style.display = cfg.hasExample ? '' : 'none';
+
+  mode = 'flash'; direction = 'en-nl';
+  document.querySelectorAll('.tab[data-mode]').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.tab[data-mode="flash"]').classList.add('active');
+  document.querySelectorAll('.seg button').forEach(b=>b.classList.remove('on'));
+  document.querySelector('.seg button[data-dir="en-nl"]').classList.add('on');
+
+  await loadContext();
+  buildWordList();
+  buildQueue();
+  renderWordTable();
+  updateOverview();
+  showScreen('screenTrainer');
+  nextCard();
+}
+
+/* ---------- persistence (per context) ---------- */
+async function loadContext(){
+  try{
+    const cw = await window.storage.get('vocab:' + contextId + ':custom-words');
+    customWords = cw ? JSON.parse(cw.value) : [];
+  }catch(e){ customWords = []; }
+  try{
+    const st = await window.storage.get('vocab:' + contextId + ':stats');
+    const parsed = st ? JSON.parse(st.value) : null;
+    wordStats = (parsed && parsed.wordStats) || {};
+    streak = (parsed && parsed.streak) || 0;
+    highScore = (parsed && parsed.highScore) || 0;
+    roundOk = (parsed && parsed.roundOk) || 0;
+    roundBad = (parsed && parsed.roundBad) || 0;
+  }catch(e){ wordStats = {}; streak=0; highScore=0; roundOk=0; roundBad=0; }
+}
+async function saveStats(){
+  try{
+    await window.storage.set('vocab:' + contextId + ':stats',
+      JSON.stringify({wordStats, streak, highScore, roundOk, roundBad}));
+  }catch(e){ console.error('kon voortgang niet opslaan', e); }
+}
+async function saveCustomWords(){
+  try{
+    await window.storage.set('vocab:' + contextId + ':custom-words', JSON.stringify(customWords));
+  }catch(e){ console.error('kon woordenlijst niet opslaan', e); }
+}
+
+/* ---------- word list / queue ---------- */
+
+function baseWordsForContext(){
+  if(contextId === 'philippe-english') return BASE_WORDS.map(([en,nl,ex])=>({en,nl,example:ex}));
+  if(contextId === 'philippe-french') return FRENCH_WORDS.map(([en,nl,ex])=>({en,nl,example:ex}));
+  if(contextId === 'cezane-english') return CEZANE_WORDS.map(([en,nl,ex])=>({en,nl,example:ex}));
+  return [];
+}
+function buildWordList(){
+  words = baseWordsForContext().concat(customWords);
+}
+
+function buildQueue(){
+  const active = words.filter(w=>!isMastered(w));
+  queue = shuffle(active);
+  currentIndex = 0;
+}
+
+function pickDirectionFor(){
+  if(direction==='mix') return Math.random()<0.5 ? 'en-nl' : 'nl-en';
+  return direction;
+}
+
+function updateOverview(){
+  document.getElementById('statStreak').textContent = streak;
+  document.getElementById('statHigh').textContent = highScore;
+  document.getElementById('statGood').textContent = roundOk;
+  document.getElementById('statBad').textContent = roundBad;
+  const masteredCount = words.filter(isMastered).length;
+  document.getElementById('statMastered').textContent = masteredCount + '/' + words.length;
+}
+
+function nextCard(){
+  flashRevealed = false;
+  document.getElementById('roundMsg').textContent = '';
+
+  if(words.length === 0){
+    current = null;
+    renderEmptyState();
+    return;
+  }
+  if(currentIndex >= queue.length){
+    const finishedFullRound = queue.length > 0;
+    roundOk = 0; roundBad = 0;
+    buildQueue();
+    if(finishedFullRound && queue.length > 0){
+      document.getElementById('roundMsg').textContent = 'Nieuwe ronde! De teller boven begint weer bij 0.';
+    }
+  }
+  if(queue.length === 0){
+    current = null;
+    renderAllMasteredState();
+    updateOverview();
+    return;
+  }
+  current = queue[currentIndex];
+  currentDir = pickDirectionFor();
+  currentIndex++;
+  renderCard();
+  updateOverview();
+}
+
+function markResult(isCorrect){
+  const s = getStats(wordId(current));
+  const key = currentDir === 'en-nl' ? 'enNl' : 'nlEn';
+  if(isCorrect) s[key] += 1;
+  s.lastResult = isCorrect ? 'good' : 'bad';
+
+  if(isCorrect){
+    roundOk++;
+    streak++;
+    if(streak > highScore) highScore = streak;
+  } else {
+    roundBad++;
+    streak = 0;
+  }
+  saveStats();
+  renderWordTable();
+}
+
+/* ---------- empty / all-mastered states ---------- */
+function renderEmptyState(){
+  document.getElementById('cardTag').textContent = '';
+  document.getElementById('promptWord').textContent = 'Nog geen woorden';
+  document.getElementById('cardBody').innerHTML =
+    '<div class="done-msg">Voeg hieronder bij "Woordenlijst beheren" je eigen woorden toe om te beginnen.</div>';
+  document.getElementById('controls').innerHTML = '';
+  document.getElementById('feedback').textContent = '';
+}
+function renderAllMasteredState(){
+  document.getElementById('cardTag').textContent = '';
+  document.getElementById('promptWord').textContent = 'Knap gedaan!';
+  document.getElementById('cardBody').innerHTML =
+    '<div class="done-msg">Je kent alle woorden in beide richtingen minstens ' + MASTERY_TARGET + ' keer goed. Voeg nieuwe toe, of oefen ze nog eens over.</div>';
+  const controls = document.getElementById('controls');
+  controls.innerHTML = '';
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-flip';
+  btn.textContent = 'Nog een keer oefenen';
+  btn.onclick = ()=>{
+    words.forEach(w=>{ const s = getStats(wordId(w)); s.enNl=0; s.nlEn=0; });
+    saveStats();
+    buildQueue();
+    renderWordTable();
+    nextCard();
+  };
+  controls.appendChild(btn);
+  document.getElementById('feedback').textContent = '';
+}
+
+/* ---------- rendering per mode ---------- */
+function renderCard(){
+  const cfg = getConfig();
+  const tag = document.getElementById('cardTag');
+  const promptWord = document.getElementById('promptWord');
+  const cardBody = document.getElementById('cardBody');
+  const controls = document.getElementById('controls');
+  const feedback = document.getElementById('feedback');
+  feedback.textContent = ''; feedback.className = 'feedback';
+
+  const promptIsA = currentDir === 'en-nl';
+  const promptText = promptIsA ? altForms(current.en)[0] : altForms(current.nl)[0];
+  tag.textContent = (promptIsA ? cfg.aLabel : cfg.bLabel).toLowerCase();
+  promptWord.textContent = promptText;
+
+  if(mode === 'flash'){
+    cardBody.innerHTML = '';
+    if(flashRevealed){
+      const ansText = promptIsA ? altForms(current.nl)[0] : altForms(current.en)[0];
+      const rev = document.createElement('div'); rev.className='reveal'; rev.textContent = ansText;
+      cardBody.appendChild(rev);
+      if(cfg.hasExample && current.example){
+        const ex = document.createElement('div'); ex.className='example'; ex.innerHTML = renderExample(current.example, false);
+        cardBody.appendChild(ex);
+      }
+    } else {
+      const hint = document.createElement('button'); hint.className='hint-btn'; hint.textContent='omdraaien om antwoord te zien';
+      hint.onclick = ()=>{ flashRevealed = true; renderCard(); };
+      cardBody.appendChild(hint);
+    }
+    controls.innerHTML = '';
+    const wrap = document.createElement('div'); wrap.className='flash-actions';
+    if(!flashRevealed){
+      const flipBtn = document.createElement('button'); flipBtn.className='btn btn-flip'; flipBtn.textContent='Omdraaien';
+      flipBtn.onclick = ()=>{ flashRevealed = true; renderCard(); };
+      wrap.appendChild(flipBtn);
+    } else {
+      const knowBtn = document.createElement('button'); knowBtn.className='btn btn-know'; knowBtn.textContent='Ik wist het';
+      knowBtn.onclick = ()=>{ markResult(true); nextCard(); };
+      const dontBtn = document.createElement('button'); dontBtn.className='btn btn-dontknow'; dontBtn.textContent='Nog leren';
+      dontBtn.onclick = ()=>{ markResult(false); nextCard(); };
+      wrap.appendChild(knowBtn); wrap.appendChild(dontBtn);
+    }
+    controls.appendChild(wrap);
+
+  } else if(mode === 'mcq'){
+    cardBody.innerHTML = '';
+    let ex = null;
+    if(cfg.hasExample && current.example){
+      ex = document.createElement('div'); ex.className='example';
+      ex.innerHTML = renderExample(current.example, !promptIsA);
+      cardBody.appendChild(ex);
+    }
+
+    const correctAnswer = promptIsA ? altForms(current.nl)[0] : altForms(current.en)[0];
+    const pool = words.filter(w=>w!==current);
+    const distractors = shuffle(pool).slice(0,3).map(w=> promptIsA ? altForms(w.nl)[0] : altForms(w.en)[0]);
+    const options = shuffle([correctAnswer, ...distractors]);
+
+    controls.innerHTML = '';
+    const grid = document.createElement('div'); grid.className='options';
+    options.forEach(opt=>{
+      const b = document.createElement('button'); b.className='opt'; b.textContent = opt;
+      b.onclick = ()=>{
+        const btns = grid.querySelectorAll('.opt'); btns.forEach(x=>x.disabled=true);
+        const isCorrect = opt === correctAnswer;
+        b.classList.add(isCorrect?'correct':'wrong');
+        if(!isCorrect){ btns.forEach(x=>{ if(x.textContent===correctAnswer) x.classList.add('correct'); }); }
+        feedback.textContent = isCorrect ? 'Goed zo!' : 'Bijna \u2014 dit was het juiste antwoord.';
+        feedback.className = 'feedback ' + (isCorrect?'ok':'bad');
+        if(ex) ex.innerHTML = renderExample(current.example, false);
+        markResult(isCorrect);
+        setTimeout(nextCard, 900);
+      };
+      grid.appendChild(b);
+    });
+    controls.appendChild(grid);
+
+  } else if(mode === 'type'){
+    cardBody.innerHTML = '';
+    let ex = null;
+    if(cfg.hasExample && current.example){
+      ex = document.createElement('div'); ex.className='example';
+      ex.innerHTML = renderExample(current.example, !promptIsA);
+      cardBody.appendChild(ex);
+    }
+
+    controls.innerHTML = '';
+    const row = document.createElement('div'); row.className='type-row';
+    const input = document.createElement('input');
+    input.placeholder = 'typ de ' + (promptIsA ? cfg.bLabel : cfg.aLabel).toLowerCase();
+    input.autocomplete = 'off';
+    const btn = document.createElement('button'); btn.className='btn btn-flip'; btn.textContent='Controleer';
+
+    function check(){
+      const acceptable = (promptIsA ? altForms(current.nl) : altForms(current.en)).map(normalize);
+      const val = normalize(input.value);
+      const isCorrect = val.length>0 && acceptable.includes(val);
+      const correctDisplay = promptIsA ? altForms(current.nl)[0] : altForms(current.en)[0];
+      feedback.textContent = isCorrect ? 'Goed zo!' : ('Het juiste antwoord was: ' + correctDisplay);
+      feedback.className = 'feedback ' + (isCorrect?'ok':'bad');
+      if(ex) ex.innerHTML = renderExample(current.example, false);
+      input.disabled = true; btn.disabled = true;
+      markResult(isCorrect);
+      setTimeout(nextCard, isCorrect ? 700 : 1600);
+    }
+    btn.onclick = check;
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter') check(); });
+    row.appendChild(input); row.appendChild(btn);
+    controls.appendChild(row);
+    setTimeout(()=>input.focus(), 50);
+  }
+}
+
+/* ---------- word list manager UI ---------- */
+function renderWordTable(){
+  const cfg = getConfig();
+  const table = document.getElementById('wordTable');
+  const countEl = document.getElementById('wordCount');
+  if(countEl) countEl.textContent = '(' + words.length + ' ' + cfg.itemLabel + ')';
+  const typeCol = cfg.hasType ? '<th>type</th>' : '';
+  let rows = '<tr><th></th><th>'+cfg.aLabel+'</th><th>'+cfg.bLabel+'</th>'+typeCol+'<th>geleerd</th><th></th></tr>';
+  words.forEach((w,i)=>{
+    const base = baseWordsForContext().length;
+    const isCustom = i >= base;
+    const s = getStats(wordId(w));
+    let statusIcon = '\u2013';
+    if(s.lastResult === 'good') statusIcon = '<span style="color:#a8d4ae;">&#10003;</span>';
+    else if(s.lastResult === 'bad') statusIcon = '<span style="color:#e8a79a;">&#10007;</span>';
+    const masteredTxt = (s.enNl>=MASTERY_TARGET && s.nlEn>=MASTERY_TARGET) ? '\u2713 geleerd' : (s.enNl+'/'+MASTERY_TARGET+' \u00b7 '+s.nlEn+'/'+MASTERY_TARGET);
+    const typeTd = cfg.hasType ? '<td>'+(w.type || '\u2013')+'</td>' : '';
+    rows += '<tr><td class="status">'+statusIcon+'</td><td>'+w.en+'</td><td>'+w.nl+'</td>'+typeTd+'<td class="mastered">'+masteredTxt+'</td>' +
+      '<td class="rm" data-i="'+i+'" '+(isCustom?'':'style="opacity:0.25;pointer-events:none;"')+'>&times;</td></tr>';
+  });
+  table.innerHTML = rows;
+  table.querySelectorAll('.rm[data-i]').forEach(td=>{
+    td.onclick = ()=>{
+      const base = baseWordsForContext().length;
+      const idx = parseInt(td.dataset.i,10) - base;
+      if(idx>=0){
+        const removed = customWords[idx];
+        delete wordStats[wordId(removed)];
+        customWords.splice(idx,1);
+        saveCustomWords(); saveStats();
+        buildWordList(); buildQueue();
+        renderWordTable(); updateOverview(); nextCard();
+      }
+    };
+  });
+}
+
+document.getElementById('addWordBtn').onclick = ()=>{
+  const en = document.getElementById('newEn').value.trim();
+  const nl = document.getElementById('newNl').value.trim();
+  const exVal = document.getElementById('newEx').value.trim();
+  if(!en || !nl) return;
+  customWords.push({en, nl, example: exVal});
+  saveCustomWords();
+  document.getElementById('newEn').value=''; document.getElementById('newNl').value=''; document.getElementById('newEx').value='';
+  buildWordList(); buildQueue();
+  renderWordTable(); updateOverview();
+  if(!current) nextCard();
+};
+
+document.getElementById('resetProgress').onclick = async ()=>{
+  wordStats = {}; streak = 0; highScore = 0; roundOk = 0; roundBad = 0;
+  await saveStats();
+  buildQueue();
+  renderWordTable();
+  updateOverview();
+  nextCard();
+};
+
+/* ---------- tab / direction wiring ---------- */
+document.querySelectorAll('.tab[data-mode]').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('.tab[data-mode]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); mode = btn.dataset.mode; nextCard();
+  };
+});
+document.querySelectorAll('.seg button').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('.seg button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on'); direction = btn.dataset.dir; nextCard();
+  };
+});
+
+/* ---------- init ---------- */
+showScreen('screenProfile');
+</script>
+</body>
+</html>
