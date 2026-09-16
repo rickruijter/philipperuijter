@@ -210,6 +210,21 @@ h1{
 .feedback.bad{color:#e8a79a;}
 .round-msg{text-align:center; font-size:12.5px; color:var(--chalk-yellow); min-height:16px; margin-bottom:4px;}
 
+/* ---- milestone popup ---- */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(15,25,20,0.72);
+  display:flex; align-items:center; justify-content:center;
+  z-index:50; padding:20px;
+}
+.modal-box{
+  background:var(--paper); color:var(--ink); border-radius:10px;
+  padding:28px 26px 24px; max-width:360px; text-align:center;
+  box-shadow:0 20px 50px rgba(0,0,0,0.5);
+  transform:rotate(-0.5deg);
+}
+.modal-emoji{font-size:44px; margin-bottom:8px;}
+.modal-box p{font-size:15px; line-height:1.5; margin:0 0 18px; color:var(--ink);}
+
 details{margin-top:24px; background:rgba(244,241,230,0.06); border:1px solid rgba(244,241,230,0.2); border-radius:10px; padding:6px 14px 14px;}
 summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; color:var(--chalk-white);}
 .add-row{display:flex; gap:6px; flex-wrap:wrap; margin:10px 0;}
@@ -234,6 +249,14 @@ summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; col
   <header>
     <h1>Woordjes</h1>
   </header>
+
+  <div class="modal-overlay" id="milestoneOverlay" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-emoji">&#127881;</div>
+      <p id="milestoneText"></p>
+      <button class="btn btn-flip" id="milestoneClose">Toppie!</button>
+    </div>
+  </div>
 
   <!-- SCREEN 1: profiel -->
   <div class="screen" id="screenProfile">
@@ -737,6 +760,8 @@ async function enterTrainer(){
   const label = (profile==='philippe' ? 'Philippe' : 'C\u00e9zane') + ' \u2014 ' + subjectLabel;
   document.getElementById('contextLabel').textContent = label;
 
+  if(profile === 'philippe'){ await loadPhilippeMilestone(); }
+
   document.getElementById('dirEnNl').textContent = cfg.aLabel + ' \u2192 ' + cfg.bLabel;
   document.getElementById('dirNlEn').textContent = cfg.bLabel + ' \u2192 ' + cfg.aLabel;
   document.getElementById('manageLabel').innerHTML = cfg.manageLabel + ' <span class="count" id="wordCount"></span>';
@@ -865,7 +890,37 @@ function markResult(isCorrect){
   }
   saveStats();
   renderWordTable();
+
+  if(profile === 'philippe'){
+    philippeMilestone.count++;
+    if(philippeMilestone.count >= 100 && !philippeMilestone.shown100){
+      philippeMilestone.shown100 = true;
+      showMilestonePopup('Philippe, wat ben je goed bezig!! Tijd om jezelf te trakteren op een lekker broodje in de kantine deze week. Stuur je een tikkie? Deze krijg je van ons!');
+    }
+    savePhilippeMilestone();
+  }
 }
+
+/* ---------- Philippe milestone (over Engels + Frans samen) ---------- */
+let philippeMilestone = {count:0, shown100:false};
+async function loadPhilippeMilestone(){
+  try{
+    const r = await window.storage.get('vocab:philippe:milestone');
+    philippeMilestone = r ? JSON.parse(r.value) : {count:0, shown100:false};
+    if(philippeMilestone.shown100 === undefined) philippeMilestone.shown100 = false;
+  }catch(e){ philippeMilestone = {count:0, shown100:false}; }
+}
+async function savePhilippeMilestone(){
+  try{ await window.storage.set('vocab:philippe:milestone', JSON.stringify(philippeMilestone)); }
+  catch(e){ console.error('kon mijlpaal niet opslaan', e); }
+}
+function showMilestonePopup(text){
+  document.getElementById('milestoneText').textContent = text;
+  document.getElementById('milestoneOverlay').style.display = 'flex';
+}
+document.getElementById('milestoneClose').onclick = ()=>{
+  document.getElementById('milestoneOverlay').style.display = 'none';
+};
 
 /* ---------- empty / all-mastered states ---------- */
 function renderEmptyState(){
