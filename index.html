@@ -271,7 +271,7 @@ summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; col
 <body>
 <div class="wrap">
   <header>
-    <h1>Woordjes</h1>
+    <h1 id="pageTitle">Woordjes</h1>
   </header>
 
   <div class="modal-overlay" id="milestoneOverlay" style="display:none;">
@@ -396,10 +396,9 @@ summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; col
       <div class="side-spacer" aria-hidden="true"></div>
     </div>
   </div>
-</div>
 
-<!-- SCREEN 4: grammatica (alleen Philippe) -->
-<div class="screen" id="screenGrammar">
+  <!-- SCREEN 4: grammatica (alleen Philippe) -->
+  <div class="screen" id="screenGrammar">
   <div class="context-bar">
     <span>Philippe &mdash; Grammatica</span>
     <button class="switch-link" id="switchUserGrammar">wissel van gebruiker / vak</button>
@@ -430,6 +429,7 @@ summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; col
 
   <div id="gControls"></div>
   <div class="feedback" id="gFeedback"></div>
+  </div>
 </div>
 
 <script>
@@ -858,6 +858,7 @@ function renderSubjectChoices(){
 
 document.getElementById('switchUser').onclick = ()=>{
   profile = null; subject = null; contextId = null;
+  document.getElementById('pageTitle').textContent = 'Woordjes';
   showScreen('screenProfile');
 };
 
@@ -867,6 +868,7 @@ async function enterTrainer(){
   const subjectLabel = SUBJECTS_PER_PROFILE[profile].find(s=>s.key===subject).label;
   const label = (profile==='philippe' ? 'Philippe' : 'C\u00e9zane') + ' \u2014 ' + subjectLabel;
   document.getElementById('contextLabel').textContent = label;
+  document.getElementById('pageTitle').textContent = 'Woordjes';
 
   if(profile === 'philippe'){ await loadPhilippeMilestone(); }
 
@@ -1302,6 +1304,7 @@ function enterGrammar(){
   document.querySelectorAll('.tab[data-gtab]').forEach(b=>b.classList.remove('active'));
   document.querySelector('.tab[data-gtab="etre"]').classList.add('active');
   document.getElementById('grammarRefDetails').open = false;
+  document.getElementById('pageTitle').textContent = 'Grammatica';
   showScreen('screenGrammar');
   renderGrammarRef();
   nextGrammarQuestion();
@@ -1309,6 +1312,7 @@ function enterGrammar(){
 
 document.getElementById('switchUserGrammar').onclick = ()=>{
   profile = null; subject = null; contextId = null;
+  document.getElementById('pageTitle').textContent = 'Woordjes';
   showScreen('screenProfile');
 };
 
