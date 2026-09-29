@@ -210,6 +210,30 @@ h1{
 .feedback.bad{color:#e8a79a;}
 .round-msg{text-align:center; font-size:12.5px; color:var(--chalk-yellow); min-height:16px; margin-bottom:4px;}
 
+/* ---- grammatica ---- */
+.scoreline{
+  display:flex; justify-content:center; gap:18px; margin:10px 0 16px; font-size:14px; color:#dfe7e1;
+}
+.scoreline b{color:var(--chalk-white); font-size:16px;}
+.scoreline .ok b{color:#a8d4ae;}
+.scoreline .bad b{color:#e8a79a;}
+.grammar-ref{
+  background:rgba(244,241,230,0.07); border:1px solid rgba(244,241,230,0.2);
+  border-radius:10px; padding:14px 18px 16px; margin-bottom:18px; color:var(--chalk-white);
+  font-size:13.5px; line-height:1.6;
+}
+.grammar-ref h3{
+  font-family:'Caveat',cursive; font-weight:700; font-size:22px; color:var(--chalk-yellow);
+  margin:10px 0 4px;
+}
+.grammar-ref h3:first-child{margin-top:0;}
+.grammar-ref table{width:100%; border-collapse:collapse; margin:6px 0 10px;}
+.grammar-ref td{padding:2px 8px 2px 0; font-size:13.5px;}
+.grammar-ref td.fr{font-weight:700; color:var(--chalk-yellow); white-space:nowrap;}
+.grammar-ref ul{margin:4px 0 8px 18px; padding:0;}
+.grammar-ref li{margin-bottom:3px;}
+.grammar-ref .ex{color:#c9d6cd; font-style:italic; font-size:12.5px;}
+
 /* ---- milestone popup ---- */
 .modal-overlay{
   position:fixed; inset:0; background:rgba(15,25,20,0.72);
@@ -372,6 +396,40 @@ summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; col
       <div class="side-spacer" aria-hidden="true"></div>
     </div>
   </div>
+</div>
+
+<!-- SCREEN 4: grammatica (alleen Philippe) -->
+<div class="screen" id="screenGrammar">
+  <div class="context-bar">
+    <span>Philippe &mdash; Grammatica</span>
+    <button class="switch-link" id="switchUserGrammar">wissel van gebruiker / vak</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" data-gtab="etre">Être</button>
+    <button class="tab" data-gtab="lidwoorden">Lidwoorden</button>
+  </div>
+
+  <div class="scoreline">
+    <span class="ok">goed <b id="gScoreOk">0</b></span>
+    <span class="bad">fout <b id="gScoreBad">0</b></span>
+  </div>
+
+  <details id="grammarRefDetails">
+    <summary>Uitleg en tabel bekijken</summary>
+    <div class="grammar-ref" id="grammarRef"></div>
+  </details>
+
+  <div class="card-area">
+    <div class="card" id="gCard">
+      <div class="tag" id="gCardTag">grammatica</div>
+      <div class="prompt-word" id="gPromptWord"></div>
+      <div id="gCardBody"></div>
+    </div>
+  </div>
+
+  <div id="gControls"></div>
+  <div class="feedback" id="gFeedback"></div>
 </div>
 
 <script>
@@ -732,7 +790,8 @@ let flashRevealed = false;
 const SUBJECTS_PER_PROFILE = {
   philippe: [
     {key:'english', label:'Engels'},
-    {key:'french', label:'Frans'}
+    {key:'french', label:'Frans'},
+    {key:'grammar', label:'Grammatica'}
   ],
   cezane: [
     {key:'english', label:'Engels'}
@@ -788,7 +847,11 @@ function renderSubjectChoices(){
     const btn = document.createElement('button');
     btn.className = 'choice-card';
     btn.textContent = s.label;
-    btn.onclick = ()=>{ subject = s.key; enterTrainer(); };
+    btn.onclick = ()=>{
+      subject = s.key;
+      if(s.key === 'grammar'){ enterGrammar(); }
+      else { enterTrainer(); }
+    };
     wrap.appendChild(btn);
   });
 }
@@ -1186,6 +1249,197 @@ document.querySelectorAll('.seg button').forEach(btn=>{
 
 /* ---------- init ---------- */
 showScreen('screenProfile');
+
+/* =====================================================================
+   GRAMMATICA (\u00catre + lidwoorden) - los van de woordjes-trainer
+   ===================================================================== */
+const ETRE_CONJ = [
+  {pr:'je',    fr:'suis',   nl:'ik ben'},
+  {pr:'tu',    fr:'es',     nl:'jij bent'},
+  {pr:'il',    fr:'est',    nl:'hij is'},
+  {pr:'elle',  fr:'est',    nl:'zij is'},
+  {pr:'on',    fr:'est',    nl:'wij zijn, men is'},
+  {pr:'nous',  fr:'sommes', nl:'wij zijn'},
+  {pr:'vous',  fr:'\u00eates',   nl:'jullie zijn, u bent'},
+  {pr:'ils',   fr:'sont',   nl:'zij zijn (m)'},
+  {pr:'elles', fr:'sont',   nl:'zij zijn (v)'}
+];
+const ETRE_FORMS = ['suis','es','est','sommes','\u00eates','sont'];
+
+const ARTICLE_NOUNS = [
+  {fr:'gar\u00e7on',  nl:'de jongen',           gender:'m', vowel:false},
+  {fr:'fille',    nl:'het meisje',          gender:'f', vowel:false},
+  {fr:'ami',      nl:'de vriend',           gender:'m', vowel:true},
+  {fr:'amie',     nl:'de vriendin',         gender:'f', vowel:true},
+  {fr:'h\u00f4tel',    nl:'het hotel',           gender:'m', vowel:true},
+  {fr:'adresse',  nl:'het adres',           gender:'f', vowel:true},
+  {fr:'coll\u00e8ge',  nl:'de middelbare school',gender:'m', vowel:false},
+  {fr:'classe',   nl:'de klas',             gender:'f', vowel:false},
+  {fr:'\u00e9cole',    nl:'de school',           gender:'f', vowel:true},
+  {fr:'ville',    nl:'de stad',             gender:'f', vowel:false},
+  {fr:'pays',     nl:'het land',            gender:'m', vowel:false},
+  {fr:'village',  nl:'het dorp',            gender:'m', vowel:false},
+  {fr:'rue',      nl:'de straat',           gender:'f', vowel:false},
+  {fr:'quartier', nl:'de wijk',             gender:'m', vowel:false},
+  {fr:'maison',   nl:'het huis',            gender:'f', vowel:false},
+  {fr:'jardin',   nl:'de tuin',             gender:'m', vowel:false},
+  {fr:'piscine',  nl:'het zwembad',         gender:'f', vowel:false},
+  {fr:'mer',      nl:'de zee',              gender:'f', vowel:false},
+  {fr:'v\u00e9lo',     nl:'de fiets',            gender:'m', vowel:false},
+  {fr:'arbre',    nl:'de boom',             gender:'m', vowel:true},
+  {fr:'chambre',  nl:'de kamer',            gender:'f', vowel:false}
+];
+
+let grammarTab = 'etre';
+let gScoreOk = 0, gScoreBad = 0;
+let gCurrent = null;
+
+function enterGrammar(){
+  document.getElementById('gScoreOk').textContent = '0';
+  document.getElementById('gScoreBad').textContent = '0';
+  grammarTab = 'etre';
+  gScoreOk = 0; gScoreBad = 0;
+  document.querySelectorAll('.tab[data-gtab]').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.tab[data-gtab="etre"]').classList.add('active');
+  document.getElementById('grammarRefDetails').open = false;
+  showScreen('screenGrammar');
+  renderGrammarRef();
+  nextGrammarQuestion();
+}
+
+document.getElementById('switchUserGrammar').onclick = ()=>{
+  profile = null; subject = null; contextId = null;
+  showScreen('screenProfile');
+};
+
+document.querySelectorAll('.tab[data-gtab]').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('.tab[data-gtab]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    grammarTab = btn.dataset.gtab;
+    gScoreOk = 0; gScoreBad = 0;
+    document.getElementById('gScoreOk').textContent = '0';
+    document.getElementById('gScoreBad').textContent = '0';
+    document.getElementById('grammarRefDetails').open = false;
+    renderGrammarRef();
+    nextGrammarQuestion();
+  };
+});
+
+function renderGrammarRef(){
+  const ref = document.getElementById('grammarRef');
+  if(grammarTab === 'etre'){
+    let rows = '';
+    ETRE_CONJ.forEach(c=>{
+      rows += '<tr><td class="fr">'+c.pr+' '+c.fr+'</td><td>'+c.nl+'</td></tr>';
+    });
+    ref.innerHTML =
+      '<h3>\u00eatre = zijn</h3>' +
+      '<table>'+rows+'</table>' +
+      '<ul>' +
+      '<li>\u2018Het is\u2019 vertaal je met <b>c\u2019est</b>.</li>' +
+      '<li>\u2018Wij zijn\u2019 kun je op twee manieren vertalen: <b>on est</b> en <b>nous sommes</b>.</li>' +
+      '<li>\u2018Zij zijn\u2019 vertaal je bij alleen maar vrouwelijk met <b>elles</b>. In alle andere gevallen met <b>ils</b>.</li>' +
+      '</ul>';
+  } else {
+    ref.innerHTML =
+      '<h3>de, het, een</h3>' +
+      '<ul>' +
+      '<li>Mannelijk: <b>le</b> (le gar\u00e7on) &mdash; Vrouwelijk: <b>la</b> (la fille)</li>' +
+      '<li>Voor een klinker of stomme h wordt le/la altijd <b>l\u2019</b> (l\u2019ami, l\u2019h\u00f4tel)</li>' +
+      '<li>Meervoud: altijd <b>les</b> (les gar\u00e7ons, les filles)</li>' +
+      '<li>\u2018Een\u2019: <b>un</b> voor mannelijk (un gar\u00e7on), <b>une</b> voor vrouwelijk (une fille)</li>' +
+      '<li>Meervoud van \u2018een\u2019: <b>des</b> (des amis) &mdash; in het Nederlands dan geen lidwoord</li>' +
+      '</ul>' +
+      '<h3>il(s) / elle(s)</h3>' +
+      '<p class="ex">Met il/ils verwijs je naar een mannelijk woord, met elle/elles naar een vrouwelijk woord \u2014 ook bij dingen.<br>' +
+      'O\u00f9 est le coll\u00e8ge? <b>Il</b> est l\u00e0-bas. &middot; O\u00f9 est la tour Eiffel? <b>Elle</b> est \u00e0 Paris.</p>';
+  }
+}
+
+function nextGrammarQuestion(){
+  document.getElementById('gFeedback').textContent = '';
+  document.getElementById('gFeedback').className = 'feedback';
+  if(grammarTab === 'etre') renderEtreQuestion();
+  else renderArticleQuestion();
+}
+
+function gMarkResult(isCorrect){
+  if(isCorrect) gScoreOk++; else gScoreBad++;
+  document.getElementById('gScoreOk').textContent = gScoreOk;
+  document.getElementById('gScoreBad').textContent = gScoreBad;
+}
+
+function renderEtreQuestion(){
+  const item = shuffle(ETRE_CONJ)[0];
+  gCurrent = item;
+  document.getElementById('gCardTag').textContent = '\u00eatre';
+  document.getElementById('gPromptWord').textContent = item.pr + ' ___';
+  document.getElementById('gCardBody').innerHTML = '<div class="example">'+item.nl+'</div>';
+
+  const controls = document.getElementById('gControls');
+  controls.innerHTML = '';
+  const correct = item.fr;
+  const distractors = shuffle(ETRE_FORMS.filter(f=>f!==correct)).slice(0,3);
+  const options = shuffle([correct, ...distractors]);
+  const grid = document.createElement('div'); grid.className = 'options';
+  options.forEach(opt=>{
+    const b = document.createElement('button'); b.className='opt'; b.textContent = item.pr+' '+opt;
+    b.onclick = ()=>{
+      const btns = grid.querySelectorAll('.opt'); btns.forEach(x=>x.disabled=true);
+      const isCorrect = opt === correct;
+      b.classList.add(isCorrect?'correct':'wrong');
+      if(!isCorrect){ btns.forEach(x=>{ if(x.textContent===item.pr+' '+correct) x.classList.add('correct'); }); }
+      const feedback = document.getElementById('gFeedback');
+      feedback.textContent = isCorrect ? 'Goed zo!' : 'Bijna \u2014 dit was het juiste antwoord.';
+      feedback.className = 'feedback ' + (isCorrect?'ok':'bad');
+      gMarkResult(isCorrect);
+      setTimeout(nextGrammarQuestion, 900);
+    };
+    grid.appendChild(b);
+  });
+  controls.appendChild(grid);
+}
+
+function renderArticleQuestion(){
+  const item = shuffle(ARTICLE_NOUNS)[0];
+  const kind = Math.random() < 0.5 ? 'def' : 'indef';
+  gCurrent = item;
+  document.getElementById('gCardTag').textContent = kind === 'def' ? 'bepaald lidwoord' : 'onbepaald lidwoord';
+  document.getElementById('gPromptWord').textContent = item.nl;
+  document.getElementById('gCardBody').innerHTML = '';
+
+  const controls = document.getElementById('gControls');
+  controls.innerHTML = '';
+  const grid = document.createElement('div'); grid.className = 'options';
+
+  let options, correct;
+  if(kind === 'def'){
+    correct = (item.vowel ? "l'" : (item.gender==='m' ? 'le ' : 'la ')) + item.fr;
+    options = ["le "+item.fr, "la "+item.fr, "l'"+item.fr];
+  } else {
+    correct = (item.gender==='m' ? 'un ' : 'une ') + item.fr;
+    options = ["un "+item.fr, "une "+item.fr];
+  }
+  options = shuffle(options);
+  options.forEach(opt=>{
+    const b = document.createElement('button'); b.className='opt'; b.textContent = opt;
+    b.onclick = ()=>{
+      const btns = grid.querySelectorAll('.opt'); btns.forEach(x=>x.disabled=true);
+      const isCorrect = opt === correct;
+      b.classList.add(isCorrect?'correct':'wrong');
+      if(!isCorrect){ btns.forEach(x=>{ if(x.textContent===correct) x.classList.add('correct'); }); }
+      const feedback = document.getElementById('gFeedback');
+      feedback.textContent = isCorrect ? 'Goed zo!' : 'Bijna \u2014 dit was het juiste antwoord.';
+      feedback.className = 'feedback ' + (isCorrect?'ok':'bad');
+      gMarkResult(isCorrect);
+      setTimeout(nextGrammarQuestion, 900);
+    };
+    grid.appendChild(b);
+  });
+  controls.appendChild(grid);
+}
+
 </script>
 </body>
 </html>
