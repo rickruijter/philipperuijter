@@ -234,21 +234,6 @@ h1{
 .grammar-ref li{margin-bottom:3px;}
 .grammar-ref .ex{color:#c9d6cd; font-style:italic; font-size:12.5px;}
 
-/* ---- milestone popup ---- */
-.modal-overlay{
-  position:fixed; inset:0; background:rgba(15,25,20,0.72);
-  display:flex; align-items:center; justify-content:center;
-  z-index:50; padding:20px;
-}
-.modal-box{
-  background:var(--paper); color:var(--ink); border-radius:10px;
-  padding:28px 26px 24px; max-width:360px; text-align:center;
-  box-shadow:0 20px 50px rgba(0,0,0,0.5);
-  transform:rotate(-0.5deg);
-}
-.modal-emoji{font-size:44px; margin-bottom:8px;}
-.modal-box p{font-size:15px; line-height:1.5; margin:0 0 18px; color:var(--ink);}
-
 details{margin-top:24px; background:rgba(244,241,230,0.06); border:1px solid rgba(244,241,230,0.2); border-radius:10px; padding:6px 14px 14px;}
 summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; color:var(--chalk-white);}
 .add-row{display:flex; gap:6px; flex-wrap:wrap; margin:10px 0;}
@@ -273,14 +258,6 @@ summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; col
   <header>
     <h1 id="pageTitle">Woordjes</h1>
   </header>
-
-  <div class="modal-overlay" id="milestoneOverlay" style="display:none;">
-    <div class="modal-box">
-      <div class="modal-emoji">&#127881;</div>
-      <p id="milestoneText"></p>
-      <button class="btn btn-flip" id="milestoneClose">Toppie!</button>
-    </div>
-  </div>
 
   <!-- SCREEN 1: profiel -->
   <div class="screen" id="screenProfile">
@@ -591,158 +568,60 @@ const FRENCH_WORDS = [
   ["Heureusement","Gelukkig",""]
 ];
 
-/* ---------- basiswoordenlijst voor C\u00e9zane (Engels, groep 7 niveau) ---------- */
+/* ---------- basiswoordenlijst voor C\u00e9zane (Engels, Unit 1 lesson 5) ---------- */
 const CEZANE_WORDS = [
-  ["one","een","I have **one** brother."],
-  ["two","twee","She has **two** cats."],
-  ["three","drie","We eat **three** apples."],
-  ["four","vier","There are **four** chairs."],
-  ["five","vijf","I count to **five**."],
-  ["six","zes","The bus leaves at **six** o'clock."],
-  ["seven","zeven","A week has **seven** days."],
-  ["eight","acht","We start school at **eight**."],
-  ["nine","negen","The film starts at **nine**."],
-  ["ten","tien","I can count to **ten**."],
-  ["red","rood","My bike is **red**."],
-  ["blue","blauw","The sky is **blue**."],
-  ["green","groen","Grass is **green**."],
-  ["yellow","geel","The sun looks **yellow**."],
-  ["black","zwart","My cat is **black**."],
-  ["white","wit","Snow is **white**."],
-  ["orange","oranje","I like **orange** juice."],
-  ["pink","roze","She wears a **pink** dress."],
-  ["Monday","maandag","We have swimming on **Monday**."],
-  ["Tuesday","dinsdag","I have music on **Tuesday**."],
-  ["Wednesday","woensdag","We play football on **Wednesday**."],
-  ["Thursday","donderdag","The library is open on **Thursday**."],
-  ["Friday","vrijdag","School finishes early on **Friday**."],
-  ["Saturday","zaterdag","We go shopping on **Saturday**."],
-  ["Sunday","zondag","We visit grandma on **Sunday**."],
-  ["January","januari","My birthday is in **January**."],
-  ["February","februari","It is cold in **February**."],
-  ["March","maart","Spring starts in **March**."],
-  ["April","april","It often rains in **April**."],
-  ["May","mei","Flowers grow in **May**."],
-  ["June","juni","Summer holidays start in **June**."],
-  ["July","juli","We go on holiday in **July**."],
-  ["August","augustus","It is hot in **August**."],
-  ["September","september","School starts again in **September**."],
-  ["October","oktober","Leaves fall in **October**."],
-  ["November","november","It gets dark early in **November**."],
-  ["December","december","We celebrate Christmas in **December**."],
-  ["spring","lente","Flowers grow in **spring**."],
-  ["summer","zomer","**Summer** is my favourite season."],
-  ["autumn","herfst","The leaves turn brown in **autumn**."],
-  ["winter","winter","It snows in **winter**."],
-  ["sun","zon","The **sun** is shining today."],
-  ["rain","regen","Take an umbrella, there is **rain**."],
-  ["wind","wind","The **wind** is very strong."],
-  ["snow","sneeuw","We play in the **snow**."],
-  ["mother","moeder","My **mother** cooks dinner."],
-  ["father","vader","My **father** drives the car."],
-  ["sister","zus","I have one **sister**."],
-  ["brother","broer","My **brother** plays football."],
-  ["grandmother","oma","My **grandmother** bakes cookies."],
-  ["grandfather","opa","My **grandfather** reads the newspaper."],
-  ["baby","baby","The **baby** is sleeping."],
-  ["head","hoofd","My **head** hurts."],
-  ["hair","haar","She has long **hair**."],
-  ["eye","oog","He has one blue **eye**."],
-  ["ear","oor","Rabbits have long **ears**."],
-  ["nose","neus","My **nose** is cold."],
-  ["mouth","mond","Open your **mouth**, please."],
-  ["hand","hand","Wash your **hands** before dinner."],
-  ["dog","hond","My **dog** likes to play."],
-  ["cat","kat","The **cat** is sleeping on the sofa."],
-  ["bird","vogel","A **bird** is singing in the tree."],
-  ["fish","vis","We have three **fish** in a tank."],
-  ["horse","paard","She can ride a **horse**."],
-  ["cow","koe","The **cow** gives milk."],
-  ["pig","varken","The **pig** lives on the farm."],
-  ["sheep","schaap","The **sheep** has white wool."],
-  ["rabbit","konijn","The **rabbit** hops in the garden."],
-  ["mouse","muis","A small **mouse** ran under the table."],
-  ["bread","brood","I eat **bread** for breakfast."],
-  ["cheese","kaas","This sandwich has **cheese** on it."],
-  ["milk","melk","I drink **milk** every morning."],
-  ["water","water","Please drink some **water**."],
-  ["apple","appel","I eat an **apple** every day."],
-  ["banana","banaan","The monkey eats a **banana**."],
-  ["egg","ei","We eat an **egg** for breakfast."],
-  ["meat","vlees","He doesn't eat **meat**."],
-  ["cake","taart","We baked a birthday **cake**."],
-  ["chocolate","chocolade","I love **chocolate**."],
-  ["shirt","shirt","He is wearing a blue **shirt**."],
-  ["trousers","broek","My **trousers** are too long."],
-  ["dress","jurk","She wears a red **dress**."],
-  ["shoes","schoenen","Put on your **shoes**."],
-  ["socks","sokken","My **socks** are wet."],
-  ["jacket","jas","Take your **jacket**, it's cold."],
-  ["hat","muts","He wears a warm **hat**."],
-  ["skirt","rok","She has a green **skirt**."],
-  ["house","huis","We live in a big **house**."],
-  ["room","kamer","My **room** is upstairs."],
-  ["kitchen","keuken","Mum is cooking in the **kitchen**."],
-  ["bedroom","slaapkamer","I sleep in my **bedroom**."],
-  ["table","tafel","Put the plates on the **table**."],
-  ["chair","stoel","Sit on the **chair**."],
-  ["bed","bed","I go to **bed** at eight."],
-  ["door","deur","Please close the **door**."],
-  ["book","boek","I am reading a **book**."],
-  ["ruler","liniaal","Use a **ruler** to draw a line."],
-  ["bag","tas","My school **bag** is heavy."],
-  ["scissors","schaar","Use the **scissors** to cut paper."],
-  ["glue","lijm","Use **glue** to stick the paper."],
-  ["eraser","gum","Can I borrow your **eraser**?"],
-  ["car","auto","We go by **car**."],
-  ["bus","bus","I take the **bus** to school."],
-  ["train","trein","The **train** is late today."],
-  ["bike","fiets","I ride my **bike** every day."],
-  ["boat","boot","We sailed on a small **boat**."],
-  ["football","voetbal","He plays **football** on Saturday."],
-  ["swimming","zwemmen","We go **swimming** every Monday."],
-  ["running","rennen","**Running** makes me tired."],
-  ["reading","lezen","**Reading** is my favourite hobby."],
-  ["drawing","tekenen","She loves **drawing** animals."],
-  ["big","groot","The elephant is very **big**."],
-  ["small","klein","The mouse is very **small**."],
-  ["tall","lang","My brother is very **tall**."],
-  ["short","kort","She has **short** hair."],
-  ["happy","blij","I am very **happy** today."],
-  ["sad","verdrietig","He looks a bit **sad**."],
-  ["hot","heet","The soup is very **hot**."],
-  ["cold","koud","It is **cold** outside."],
-  ["fast","snel","The car drives very **fast**."],
-  ["slow","langzaam","The turtle is very **slow**."],
-  ["good","goed","This cake tastes **good**."],
-  ["bad","slecht","The weather is **bad** today."],
-  ["to be","zijn","I want to **be** a teacher."],
-  ["to have","hebben","I **have** two brothers."],
-  ["to go","gaan","We **go** to school by bike."],
-  ["to play","spelen","Let's **play** a game."],
-  ["to eat","eten","I **eat** breakfast at seven."],
-  ["to drink","drinken","Please **drink** your milk."],
-  ["to see","zien","I can **see** the mountains."],
-  ["to hear","horen","Can you **hear** the birds?"],
-  ["to walk","lopen","We **walk** to school together."],
-  ["to run","rennen","The dog likes to **run**."],
-  ["to swim","zwemmen","Fish can **swim** fast."],
-  ["to sleep","slapen","Babies **sleep** a lot."],
-  ["who","wie","**Who** is that boy?"],
-  ["what","wat","**What** is your name?"],
-  ["where","waar","**Where** do you live?"],
-  ["when","wanneer","**When** is your birthday?"],
-  ["why","waarom","**Why** are you laughing?"],
-  ["how","hoe","**How** old are you?"],
-  ["in","in","The cat is **in** the box."],
-  ["on","op","The book is **on** the table."],
-  ["under","onder","The ball rolled **under** the bed."],
-  ["behind","achter","The dog is hiding **behind** the tree."],
-  ["hello","hallo","**Hello**, how are you?"],
-  ["goodbye","tot ziens","We said **goodbye** and left."],
-  ["please","alsjeblieft","Can I have some water, **please**?"],
-  ["thank you","dank je wel","**Thank you** for the present."],
-  ["yes","ja","**Yes**, I agree with you."]
+  ["alphabet","alfabet",""],
+  ["aunt","tante",""],
+  ["Austria; Austrian","Oostenrijk; Oostenrijks",""],
+  ["Belgium; Belgian","Belgi\u00eb; Belgisch",""],
+  ["children","kinderen",""],
+  ["Christmas","Kerstmis",""],
+  ["country","land",""],
+  ["cousin","neef; nicht (kind van oom of tante)",""],
+  ["England; English","Engeland; Engels",""],
+  ["family members","familieleden; gezinsleden",""],
+  ["family","familie; gezin",""],
+  ["first name","voornaam",""],
+  ["France; French","Frankrijk; Frans",""],
+  ["Germany; German","Duitsland; Duits",""],
+  ["grandmother and grandfather","oma en opa",""],
+  ["Greece; Greek","Griekenland; Grieks",""],
+  ["holiday","vakantie",""],
+  ["husband and wife","echtgenoot en echtgenote",""],
+  ["nephew","neef (zoon van broer of zus)",""],
+  ["the Netherlands; Dutch","Nederland; Nederlands",""],
+  ["niece","nicht (dochter van broer of zus)",""],
+  ["numbers","getallen",""],
+  ["picture","plaatje; schilderij; foto",""],
+  ["Poland; Polish","Polen; Pools",""],
+  ["public holiday","nationale feestdag",""],
+  ["son and daughter","zoon en dochter",""],
+  ["surname","achternaam",""],
+  ["the months of the year","de maanden van het jaar",""],
+  ["to have a party","een feest geven",""],
+  ["to pretend","doen alsof",""],
+  ["Turkey; Turkish","Turkije; Turks",""],
+  ["uncle","oom",""],
+  ["Where are you from?","Waar kom je vandaan?",""],
+  ["I am from England.","Ik kom uit Engeland.",""],
+  ["I am English.","Ik ben Engels.",""],
+  ["Where is he/she from?","Waar komt hij/zij vandaan?",""],
+  ["He/She is from Turkey.","Hij/zij komt uit Turkije.",""],
+  ["He/She is Turkish.","Hij/zij is Turks.",""],
+  ["Where are they from?","Waar komen zij vandaan?",""],
+  ["They are from Poland.","Zij komen uit Polen.",""],
+  ["They are Polish.","Zij zijn Pools.",""],
+  ["Where are you from, Tom and Wouter?","Waar komen jullie vandaan, Tom en Wouter?",""],
+  ["We are from the Netherlands.","Wij komen uit Nederland.",""],
+  ["We are Dutch.","Wij zijn Nederlands.",""],
+  ["What is your name?","Hoe heet je?",""],
+  ["How are you?","Hoe gaat het met je?",""],
+  ["I'm fine. How are you?","Met mij gaat het goed. Hoe gaat het met jou?",""],
+  ["How old are you?","Hoe oud ben je?",""],
+  ["Where do you live?","Waar woon je?",""],
+  ["My name is \u2026","Ik heet \u2026",""],
+  ["I am \u2026 years old.","Ik ben \u2026 jaar.",""],
+  ["I live in \u2026","Ik woon in \u2026",""]
 ];
 
 /* ---------- helpers ---------- */
@@ -869,8 +748,6 @@ async function enterTrainer(){
   const label = (profile==='philippe' ? 'Philippe' : 'C\u00e9zane') + ' \u2014 ' + subjectLabel;
   document.getElementById('contextLabel').textContent = label;
   document.getElementById('pageTitle').textContent = 'Woordjes';
-
-  if(profile === 'philippe'){ await loadPhilippeMilestone(); }
 
   document.getElementById('dirEnNl').textContent = cfg.aLabel + ' \u2192 ' + cfg.bLabel;
   document.getElementById('dirNlEn').textContent = cfg.bLabel + ' \u2192 ' + cfg.aLabel;
@@ -1000,37 +877,7 @@ function markResult(isCorrect){
   }
   saveStats();
   renderWordTable();
-
-  if(profile === 'philippe'){
-    philippeMilestone.count++;
-    if(philippeMilestone.count >= 100 && !philippeMilestone.shown100){
-      philippeMilestone.shown100 = true;
-      showMilestonePopup('Philippe, wat ben je goed bezig!! Tijd om jezelf te trakteren op een lekker broodje in de kantine deze week. Stuur je een tikkie? Deze krijg je van ons!');
-    }
-    savePhilippeMilestone();
-  }
 }
-
-/* ---------- Philippe milestone (over Engels + Frans samen) ---------- */
-let philippeMilestone = {count:0, shown100:false};
-async function loadPhilippeMilestone(){
-  try{
-    const r = await window.storage.get('vocab:philippe:milestone');
-    philippeMilestone = r ? JSON.parse(r.value) : {count:0, shown100:false};
-    if(philippeMilestone.shown100 === undefined) philippeMilestone.shown100 = false;
-  }catch(e){ philippeMilestone = {count:0, shown100:false}; }
-}
-async function savePhilippeMilestone(){
-  try{ await window.storage.set('vocab:philippe:milestone', JSON.stringify(philippeMilestone)); }
-  catch(e){ console.error('kon mijlpaal niet opslaan', e); }
-}
-function showMilestonePopup(text){
-  document.getElementById('milestoneText').textContent = text;
-  document.getElementById('milestoneOverlay').style.display = 'flex';
-}
-document.getElementById('milestoneClose').onclick = ()=>{
-  document.getElementById('milestoneOverlay').style.display = 'none';
-};
 
 /* ---------- empty / all-mastered states ---------- */
 function renderEmptyState(){
