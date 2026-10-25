@@ -383,6 +383,7 @@ summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; col
 
   <div class="tabs">
     <button class="tab" data-gtab="etre">Être</button>
+    <button class="tab" data-gtab="avoir">Avoir</button>
     <button class="tab" data-gtab="lidwoorden">Lidwoorden</button>
   </div>
 
@@ -493,26 +494,18 @@ const BASE_WORDS = [
 ];
 const MASTERY_TARGET = 5;
 
-/* ---------- basiswoordenlijst voor Philippe (Frans, Unit\u00e9 1) ---------- */
+/* ---------- basiswoordenlijst voor Philippe (Frans, Unit\u00e9 1+2) ---------- */
 const FRENCH_WORDS = [
-  ["Bonjour","Dag",""],
-  ["Bonsoir","Goedenavond",""],
-  ["Au revoir","Tot ziens",""],
   ["\u00e0 plus","Tot later",""],
-  ["\u00e7a va","Hoe gaat het?; Het gaat goed",""],
   ["\u00e7a va bien","Het gaat goed",""],
-  ["Merci","Bedankt",""],
   ["Le gar\u00e7on","De jongen",""],
-  ["La fille","Het meisje",""],
+  ["La fille","Het meisje; de dochter",""],
   ["Je m'appelle (s'appeler)","Ik heet",""],
   ["J'habite (habiter)","Ik woon",""],
-  ["Monsieur","Meneer",""],
-  ["Madame","Mevrouw",""],
   ["Il y a","Er is; er zijn",""],
   ["C'est","Het is",""],
   ["O\u00f9","Waar",""],
-  ["L'ami","De vriend",""],
-  ["L'amie","De vriendin",""],
+  ["L'ami(e)","De vriend(in)",""],
   ["Le quartier","De wijk",""],
   ["L'\u00e9cole","De school",""],
   ["Le pays","Het land",""],
@@ -555,17 +548,71 @@ const FRENCH_WORDS = [
   ["L'\u00e2ge","De leeftijd",""],
   ["Alors","Dus",""],
   ["Le v\u00e9lo","De fiets",""],
+  ["La famille","Het gezin",""],
+  ["Le fr\u00e8re","De broer",""],
+  ["La s\u0153ur","De zus",""],
+  ["L'enfant","Het kind",""],
+  ["Les parents","De ouders",""],
+  ["Le p\u00e8re","De vader",""],
+  ["La m\u00e8re","De moeder",""],
+  ["Le fils","De zoon",""],
+  ["Le grand-p\u00e8re","De opa",""],
+  ["La grand-m\u00e8re","De oma",""],
+  ["Le cousin","De neef",""],
+  ["La cousine","De nicht",""],
+  ["Mari\u00e9 (se marier)","Getrouwd",""],
+  ["Divorc\u00e9 (divorcer)","Gescheiden",""],
+  ["Meilleur","Beste",""],
+  ["L'anniversaire","De verjaardag",""],
+  ["La f\u00eate","Het feest",""],
+  ["L'invitation","De uitnodiging",""],
+  ["Inviter","Uitnodigen",""],
+  ["Manger","Eten",""],
+  ["Le chien","De hond",""],
+  ["Seul(e)","Alleen",""],
+  ["Le copain","De vriend",""],
+  ["La copine","De vriendin",""],
+  ["\u00e9couter","Luisteren naar",""],
+  ["La chambre","De slaapkamer",""],
+  ["Quel(le)","Welke",""],
+  ["Adorer","Dol zijn op",""],
+  ["Chez nous","Bij ons thuis",""],
+  ["Rentrer","Naar huis gaan",""],
+  ["\u00e0 pied","Lopend",""],
+  ["La chance","Het geluk",""],
+  ["Pr\u00e9par\u00e9 (pr\u00e9parer)","Klaargemaakt; voorbereid",""],
+  ["Bon; bonne","Goed; lekker",""],
+  ["Le g\u00e2teau","De taart",""],
+  ["La fleur","De bloem",""],
+  ["Elle rit (rire)","Zij lacht",""],
+  ["Dr\u00f4le","Grappig",""],
+  ["Sur","Op",""],
+  ["Tout le monde","Iedereen",""],
+  ["Toujours","Altijd",""],
+  ["Depuis","Sinds",""],
+  ["Attends! (attendre)","Wacht!",""],
+  ["La voisine","De buurvrouw",""],
+  ["Le voisin","De buurman",""],
   ["\u00e0 demain","Tot morgen",""],
   ["Pas mal","Niet slecht",""],
   ["L'habitant","De inwoner",""],
-  ["J'adore (adorer)","Ik ben dol op",""],
-  ["\u00e9couter","Luisteren",""],
   ["Excuse-moi","Sorry",""],
   ["C'est vrai","Het is waar",""],
   ["C'est possible","Het is mogelijk",""],
   ["On va (aller)","We gaan",""],
   ["Nager","Zwemmen",""],
-  ["Heureusement","Gelukkig",""]
+  ["Heureusement","Gelukkig",""],
+  ["Rencontrer","Ontmoeten",""],
+  ["Travailler","Werken",""],
+  ["Autre","Ander",""],
+  ["Tu viens (venir)","Jij komt",""],
+  ["Je vais (aller)","Ik ga",""],
+  ["La dispute","De ruzie",""],
+  ["Dernier; derni\u00e8re","Laatste; vorige",""],
+  ["Vrai(ment)","Echt",""],
+  ["Parce que","Omdat",""],
+  ["Pr\u00e9f\u00e9r\u00e9","Lievelings",""],
+  ["Ensemble","Samen",""]
 ];
 
 /* ---------- basiswoordenlijst voor C\u00e9zane (Engels, Unit 1 lesson 5) ---------- */
@@ -1115,6 +1162,19 @@ const ETRE_CONJ = [
 ];
 const ETRE_FORMS = ['suis','es','est','sommes','\u00eates','sont'];
 
+const AVOIR_CONJ = [
+  {pr:"j'",    fr:'ai',    nl:'ik heb', noSpace:true},
+  {pr:'tu',    fr:'as',    nl:'jij hebt'},
+  {pr:'il',    fr:'a',     nl:'hij heeft'},
+  {pr:'elle',  fr:'a',     nl:'zij heeft'},
+  {pr:'on',    fr:'a',     nl:'wij hebben, men heeft'},
+  {pr:'nous',  fr:'avons', nl:'wij hebben'},
+  {pr:'vous',  fr:'avez',  nl:'jullie hebben, u hebt'},
+  {pr:'ils',   fr:'ont',   nl:'zij hebben (m)'},
+  {pr:'elles', fr:'ont',   nl:'zij hebben (v)'}
+];
+const AVOIR_FORMS = ['ai','as','a','avons','avez','ont'];
+
 const ARTICLE_NOUNS = [
   {fr:'gar\u00e7on',  nl:'de jongen',           gender:'m', vowel:false},
   {fr:'fille',    nl:'het meisje',          gender:'f', vowel:false},
@@ -1192,6 +1252,19 @@ function renderGrammarRef(){
       '<li>\u2018Wij zijn\u2019 kun je op twee manieren vertalen: <b>on est</b> en <b>nous sommes</b>.</li>' +
       '<li>\u2018Zij zijn\u2019 vertaal je bij alleen maar vrouwelijk met <b>elles</b>. In alle andere gevallen met <b>ils</b>.</li>' +
       '</ul>';
+  } else if(grammarTab === 'avoir'){
+    let rows = '';
+    AVOIR_CONJ.forEach(c=>{
+      rows += '<tr><td class="fr">'+(c.noSpace ? c.pr+c.fr : c.pr+' '+c.fr)+'</td><td>'+c.nl+'</td></tr>';
+    });
+    ref.innerHTML =
+      '<h3>avoir = hebben</h3>' +
+      '<table>'+rows+'</table>' +
+      '<ul>' +
+      '<li><b>je</b> wordt voor een klinker <b>j\u2019</b>: <b>j\u2019ai</b> (niet \u2018je ai\u2019).</li>' +
+      '<li>\u2018Er is, er zijn\u2019 vertaal je met <b>il y a</b> \u2014 dat komt van <b>avoir</b>, niet van \u00eatre!</li>' +
+      '<li>\u2018Wij hebben\u2019 kun je op twee manieren vertalen: <b>on a</b> en <b>nous avons</b>.</li>' +
+      '</ul>';
   } else {
     ref.innerHTML =
       '<h3>de, het, een</h3>' +
@@ -1211,7 +1284,8 @@ function renderGrammarRef(){
 function nextGrammarQuestion(){
   document.getElementById('gFeedback').textContent = '';
   document.getElementById('gFeedback').className = 'feedback';
-  if(grammarTab === 'etre') renderEtreQuestion();
+  if(grammarTab === 'etre') renderConjugationQuestion(ETRE_CONJ, ETRE_FORMS, '\u00eatre');
+  else if(grammarTab === 'avoir') renderConjugationQuestion(AVOIR_CONJ, AVOIR_FORMS, 'avoir');
   else renderArticleQuestion();
 }
 
@@ -1221,26 +1295,27 @@ function gMarkResult(isCorrect){
   document.getElementById('gScoreBad').textContent = gScoreBad;
 }
 
-function renderEtreQuestion(){
-  const item = shuffle(ETRE_CONJ)[0];
+function renderConjugationQuestion(conjList, formsList, tagLabel){
+  const item = shuffle(conjList)[0];
   gCurrent = item;
-  document.getElementById('gCardTag').textContent = '\u00eatre';
-  document.getElementById('gPromptWord').textContent = item.pr + ' ___';
+  const joiner = item.noSpace ? '' : ' ';
+  document.getElementById('gCardTag').textContent = tagLabel;
+  document.getElementById('gPromptWord').textContent = item.pr + joiner + '___';
   document.getElementById('gCardBody').innerHTML = '<div class="example">'+item.nl+'</div>';
 
   const controls = document.getElementById('gControls');
   controls.innerHTML = '';
   const correct = item.fr;
-  const distractors = shuffle(ETRE_FORMS.filter(f=>f!==correct)).slice(0,3);
+  const distractors = shuffle(formsList.filter(f=>f!==correct)).slice(0,3);
   const options = shuffle([correct, ...distractors]);
   const grid = document.createElement('div'); grid.className = 'options';
   options.forEach(opt=>{
-    const b = document.createElement('button'); b.className='opt'; b.textContent = item.pr+' '+opt;
+    const b = document.createElement('button'); b.className='opt'; b.textContent = item.pr+joiner+opt;
     b.onclick = ()=>{
       const btns = grid.querySelectorAll('.opt'); btns.forEach(x=>x.disabled=true);
       const isCorrect = opt === correct;
       b.classList.add(isCorrect?'correct':'wrong');
-      if(!isCorrect){ btns.forEach(x=>{ if(x.textContent===item.pr+' '+correct) x.classList.add('correct'); }); }
+      if(!isCorrect){ btns.forEach(x=>{ if(x.textContent===item.pr+joiner+correct) x.classList.add('correct'); }); }
       const feedback = document.getElementById('gFeedback');
       feedback.textContent = isCorrect ? 'Goed zo!' : 'Bijna \u2014 dit was het juiste antwoord.';
       feedback.className = 'feedback ' + (isCorrect?'ok':'bad');
