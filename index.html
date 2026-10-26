@@ -247,6 +247,8 @@ summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; col
 .list-table th{text-align:left; color:#c9d6cd; font-weight:700; font-size:11.5px; padding:4px 6px; border-bottom:1px solid rgba(244,241,230,0.2);}
 .list-table td{padding:5px 6px; border-bottom:1px solid rgba(244,241,230,0.08); color:var(--chalk-white);}
 .list-table td.rm{cursor:pointer; color:#e8a79a; text-align:center; font-weight:700;}
+.list-table td.known-cell{text-align:center;}
+.list-table .known-check{width:16px; height:16px; cursor:pointer; accent-color:var(--chalk-yellow);}
 .list-table td.status{text-align:center; width:26px;}
 .list-table td.mastered{text-align:center; width:60px; font-size:11px; color:var(--chalk-yellow); font-weight:700;}
 .count{color:#c9d6cd; font-size:12px; margin-left:6px; font-weight:400;}
@@ -737,12 +739,13 @@ const CONTEXT_CONFIG = {
 function getConfig(){ return CONTEXT_CONFIG[contextId] || CONTEXT_CONFIG['philippe-english']; }
 
 function getStats(id){
-  if(!wordStats[id]) wordStats[id] = {enNl:0, nlEn:0, lastResult:null};
+  if(!wordStats[id]) wordStats[id] = {enNl:0, nlEn:0, lastResult:null, known:false};
+  if(wordStats[id].known === undefined) wordStats[id].known = false;
   return wordStats[id];
 }
 function isMastered(w){
   const s = getStats(wordId(w));
-  return s.enNl >= MASTERY_TARGET && s.nlEn >= MASTERY_TARGET;
+  return s.known || (s.enNl >= MASTERY_TARGET && s.nlEn >= MASTERY_TARGET);
 }
 
 /* ---------- screens ---------- */
@@ -1077,7 +1080,7 @@ function renderWordTable(){
   const countEl = document.getElementById('wordCount');
   if(countEl) countEl.textContent = '(' + words.length + ' ' + cfg.itemLabel + ')';
   const typeCol = cfg.hasType ? '<th>type</th>' : '';
-  let rows = '<tr><th></th><th>'+cfg.aLabel+'</th><th>'+cfg.bLabel+'</th>'+typeCol+'<th>geleerd</th><th></th></tr>';
+  let rows = '<tr><th></th><th>'+cfg.aLabel+'</th><th>'+cfg.bLabel+'</th>'+typeCol+'<th>ken ik al</th><th>geleerd</th><th></th></tr>';
   words.forEach((w,i)=>{
     const base = baseWordsForContext().length;
     const isCustom = i >= base;
@@ -1085,12 +1088,25 @@ function renderWordTable(){
     let statusIcon = '\u2013';
     if(s.lastResult === 'good') statusIcon = '<span style="color:#a8d4ae;">&#10003;</span>';
     else if(s.lastResult === 'bad') statusIcon = '<span style="color:#e8a79a;">&#10007;</span>';
-    const masteredTxt = (s.enNl>=MASTERY_TARGET && s.nlEn>=MASTERY_TARGET) ? '\u2713 geleerd' : (s.enNl+'/'+MASTERY_TARGET+' \u00b7 '+s.nlEn+'/'+MASTERY_TARGET);
+    const masteredTxt = isMastered(w) ? '\u2713 geleerd' : (s.enNl+'/'+MASTERY_TARGET+' \u00b7 '+s.nlEn+'/'+MASTERY_TARGET);
     const typeTd = cfg.hasType ? '<td>'+(w.type || '\u2013')+'</td>' : '';
-    rows += '<tr><td class="status">'+statusIcon+'</td><td>'+w.en+'</td><td>'+w.nl+'</td>'+typeTd+'<td class="mastered">'+masteredTxt+'</td>' +
+    const knownTd = '<td class="known-cell"><input type="checkbox" class="known-check" data-i="'+i+'" '+(s.known?'checked':'')+'></td>';
+    rows += '<tr><td class="status">'+statusIcon+'</td><td>'+w.en+'</td><td>'+w.nl+'</td>'+typeTd+knownTd+'<td class="mastered">'+masteredTxt+'</td>' +
       '<td class="rm" data-i="'+i+'" '+(isCustom?'':'style="opacity:0.25;pointer-events:none;"')+'>&times;</td></tr>';
   });
   table.innerHTML = rows;
+  table.querySelectorAll('.known-check').forEach(cb=>{
+    cb.onchange = ()=>{
+      const idx = parseInt(cb.dataset.i,10);
+      const w = words[idx];
+      const s = getStats(wordId(w));
+      s.known = cb.checked;
+      saveStats();
+      buildQueue();
+      renderWordTable();
+      updateOverview();
+    };
+  });
   table.querySelectorAll('.rm[data-i]').forEach(td=>{
     td.onclick = ()=>{
       const base = baseWordsForContext().length;
