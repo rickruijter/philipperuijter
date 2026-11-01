@@ -277,6 +277,16 @@ summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; col
     <div class="choice-grid" id="subjectChoices"></div>
   </div>
 
+  <!-- SCREEN 2b: Frans - woordjes of grammatica -->
+  <div class="screen" id="screenFrenchChoice">
+    <button class="back-link" id="backToSubjectFromFrench">&lsaquo; terug</button>
+    <div class="choice-title">Frans &mdash; wat wil je oefenen?</div>
+    <div class="choice-grid">
+      <button class="choice-card" id="frenchChoiceWords">Woordjes</button>
+      <button class="choice-card" id="frenchChoiceGrammar">Grammatica</button>
+    </div>
+  </div>
+
   <!-- SCREEN 3: trainer -->
   <div class="screen" id="screenTrainer">
     <div class="context-bar">
@@ -384,8 +394,7 @@ summary{cursor:pointer; padding:10px 0 6px; font-weight:700; font-size:14px; col
   </div>
 
   <div class="tabs">
-    <button class="tab" data-gtab="etre">Être</button>
-    <button class="tab" data-gtab="avoir">Avoir</button>
+    <button class="tab" data-gtab="verbs">Werkwoorden (Être &amp; avoir)</button>
     <button class="tab" data-gtab="lidwoorden">Lidwoorden</button>
   </div>
 
@@ -718,8 +727,7 @@ let flashRevealed = false;
 const SUBJECTS_PER_PROFILE = {
   philippe: [
     {key:'english', label:'Engels'},
-    {key:'french', label:'Frans'},
-    {key:'grammar', label:'Grammatica'}
+    {key:'french', label:'Frans'}
   ],
   cezane: [
     {key:'english', label:'Engels'}
@@ -777,13 +785,21 @@ function renderSubjectChoices(){
     btn.className = 'choice-card';
     btn.textContent = s.label;
     btn.onclick = ()=>{
-      subject = s.key;
-      if(s.key === 'grammar'){ enterGrammar(); }
-      else { enterTrainer(); }
+      if(s.key === 'french'){
+        subject = s.key;
+        showScreen('screenFrenchChoice');
+      } else {
+        subject = s.key;
+        enterTrainer();
+      }
     };
     wrap.appendChild(btn);
   });
 }
+
+document.getElementById('backToSubjectFromFrench').onclick = ()=> showScreen('screenSubject');
+document.getElementById('frenchChoiceWords').onclick = ()=>{ subject = 'french'; enterTrainer(); };
+document.getElementById('frenchChoiceGrammar').onclick = ()=>{ enterGrammar(); };
 
 document.getElementById('switchUser').onclick = ()=>{
   profile = null; subject = null; contextId = null;
@@ -1191,6 +1207,14 @@ const AVOIR_CONJ = [
 ];
 const AVOIR_FORMS = ['ai','as','a','avons','avez','ont'];
 
+const VERB_CONJ = [
+  ...ETRE_CONJ.map(c=>({...c, infinitive:'être'})),
+  ...AVOIR_CONJ.map(c=>({...c, infinitive:'avoir'}))
+];
+function verbPhrase(item){
+  return item.pr + (item.noSpace ? '' : ' ') + item.fr;
+}
+
 const ARTICLE_NOUNS = [
   {fr:'gar\u00e7on',  nl:'de jongen',           gender:'m', vowel:false},
   {fr:'fille',    nl:'het meisje',          gender:'f', vowel:false},
@@ -1215,17 +1239,18 @@ const ARTICLE_NOUNS = [
   {fr:'chambre',  nl:'de kamer',            gender:'f', vowel:false}
 ];
 
-let grammarTab = 'etre';
+let grammarTab = 'verbs';
 let gScoreOk = 0, gScoreBad = 0;
 let gCurrent = null;
+let gVerbDir = 'fr-nl';
 
 function enterGrammar(){
   document.getElementById('gScoreOk').textContent = '0';
   document.getElementById('gScoreBad').textContent = '0';
-  grammarTab = 'etre';
+  grammarTab = 'verbs';
   gScoreOk = 0; gScoreBad = 0;
   document.querySelectorAll('.tab[data-gtab]').forEach(b=>b.classList.remove('active'));
-  document.querySelector('.tab[data-gtab="etre"]').classList.add('active');
+  document.querySelector('.tab[data-gtab="verbs"]').classList.add('active');
   document.getElementById('grammarRefDetails').open = false;
   document.getElementById('pageTitle').textContent = 'Grammatica';
   showScreen('screenGrammar');
@@ -1255,27 +1280,25 @@ document.querySelectorAll('.tab[data-gtab]').forEach(btn=>{
 
 function renderGrammarRef(){
   const ref = document.getElementById('grammarRef');
-  if(grammarTab === 'etre'){
-    let rows = '';
+  if(grammarTab === 'verbs'){
+    let etreRows = '';
     ETRE_CONJ.forEach(c=>{
-      rows += '<tr><td class="fr">'+c.pr+' '+c.fr+'</td><td>'+c.nl+'</td></tr>';
+      etreRows += '<tr><td class="fr">'+c.pr+' '+c.fr+'</td><td>'+c.nl+'</td></tr>';
+    });
+    let avoirRows = '';
+    AVOIR_CONJ.forEach(c=>{
+      avoirRows += '<tr><td class="fr">'+(c.noSpace ? c.pr+c.fr : c.pr+' '+c.fr)+'</td><td>'+c.nl+'</td></tr>';
     });
     ref.innerHTML =
       '<h3>\u00eatre = zijn</h3>' +
-      '<table>'+rows+'</table>' +
+      '<table>'+etreRows+'</table>' +
       '<ul>' +
       '<li>\u2018Het is\u2019 vertaal je met <b>c\u2019est</b>.</li>' +
       '<li>\u2018Wij zijn\u2019 kun je op twee manieren vertalen: <b>on est</b> en <b>nous sommes</b>.</li>' +
       '<li>\u2018Zij zijn\u2019 vertaal je bij alleen maar vrouwelijk met <b>elles</b>. In alle andere gevallen met <b>ils</b>.</li>' +
-      '</ul>';
-  } else if(grammarTab === 'avoir'){
-    let rows = '';
-    AVOIR_CONJ.forEach(c=>{
-      rows += '<tr><td class="fr">'+(c.noSpace ? c.pr+c.fr : c.pr+' '+c.fr)+'</td><td>'+c.nl+'</td></tr>';
-    });
-    ref.innerHTML =
+      '</ul>' +
       '<h3>avoir = hebben</h3>' +
-      '<table>'+rows+'</table>' +
+      '<table>'+avoirRows+'</table>' +
       '<ul>' +
       '<li><b>je</b> wordt voor een klinker <b>j\u2019</b>: <b>j\u2019ai</b> (niet \u2018je ai\u2019).</li>' +
       '<li>\u2018Er is, er zijn\u2019 vertaal je met <b>il y a</b> \u2014 dat komt van <b>avoir</b>, niet van \u00eatre!</li>' +
@@ -1300,8 +1323,7 @@ function renderGrammarRef(){
 function nextGrammarQuestion(){
   document.getElementById('gFeedback').textContent = '';
   document.getElementById('gFeedback').className = 'feedback';
-  if(grammarTab === 'etre') renderConjugationQuestion(ETRE_CONJ, ETRE_FORMS, '\u00eatre');
-  else if(grammarTab === 'avoir') renderConjugationQuestion(AVOIR_CONJ, AVOIR_FORMS, 'avoir');
+  if(grammarTab === 'verbs') renderVerbQuestion();
   else renderArticleQuestion();
 }
 
@@ -1311,36 +1333,47 @@ function gMarkResult(isCorrect){
   document.getElementById('gScoreBad').textContent = gScoreBad;
 }
 
-function renderConjugationQuestion(conjList, formsList, tagLabel){
-  const item = shuffle(conjList)[0];
+function renderVerbQuestion(){
+  const item = shuffle(VERB_CONJ)[0];
   gCurrent = item;
-  const joiner = item.noSpace ? '' : ' ';
-  document.getElementById('gCardTag').textContent = tagLabel;
-  document.getElementById('gPromptWord').textContent = item.pr + joiner + '___';
-  document.getElementById('gCardBody').innerHTML = '<div class="example">'+item.nl+'</div>';
+  gVerbDir = Math.random() < 0.5 ? 'fr-nl' : 'nl-fr';
+  const phrase = verbPhrase(item);
+
+  document.getElementById('gCardTag').textContent = gVerbDir === 'fr-nl' ? 'Frans \u2192 Nederlands' : 'Nederlands \u2192 Frans';
+  document.getElementById('gPromptWord').textContent = gVerbDir === 'fr-nl' ? phrase : item.nl;
+  document.getElementById('gCardBody').innerHTML = '';
 
   const controls = document.getElementById('gControls');
   controls.innerHTML = '';
-  const correct = item.fr;
-  const distractors = shuffle(formsList.filter(f=>f!==correct)).slice(0,3);
-  const options = shuffle([correct, ...distractors]);
-  const grid = document.createElement('div'); grid.className = 'options';
-  options.forEach(opt=>{
-    const b = document.createElement('button'); b.className='opt'; b.textContent = item.pr+joiner+opt;
-    b.onclick = ()=>{
-      const btns = grid.querySelectorAll('.opt'); btns.forEach(x=>x.disabled=true);
-      const isCorrect = opt === correct;
-      b.classList.add(isCorrect?'correct':'wrong');
-      if(!isCorrect){ btns.forEach(x=>{ if(x.textContent===item.pr+joiner+correct) x.classList.add('correct'); }); }
-      const feedback = document.getElementById('gFeedback');
-      feedback.textContent = isCorrect ? 'Goed zo!' : 'Bijna \u2014 dit was het juiste antwoord.';
-      feedback.className = 'feedback ' + (isCorrect?'ok':'bad');
-      gMarkResult(isCorrect);
-      setTimeout(nextGrammarQuestion, 900);
-    };
-    grid.appendChild(b);
-  });
-  controls.appendChild(grid);
+  const input = document.createElement('input');
+  input.placeholder = gVerbDir === 'fr-nl' ? 'typ de Nederlandse vertaling' : 'typ de Franse zin (bijv. elle est)';
+  input.autocomplete = 'off';
+  const btn = document.createElement('button'); btn.className = 'btn btn-flip'; btn.textContent = 'Controleer';
+
+  function check(){
+    const val = normalize(input.value);
+    let isCorrect;
+    let correctAnswer;
+    if(gVerbDir === 'fr-nl'){
+      const acceptable = item.nl.split(',').map(s=>normalize(s));
+      isCorrect = val.length>0 && acceptable.includes(val);
+      correctAnswer = item.nl;
+    } else {
+      isCorrect = val.length>0 && val === normalize(phrase);
+      correctAnswer = phrase;
+    }
+    input.disabled = true; btn.disabled = true;
+    const feedback = document.getElementById('gFeedback');
+    feedback.innerHTML = isCorrect ? 'Goed zo!' : 'Bijna \u2014 het juiste antwoord was: <b>'+correctAnswer+'</b>';
+    feedback.className = 'feedback ' + (isCorrect?'ok':'bad');
+    gMarkResult(isCorrect);
+    setTimeout(nextGrammarQuestion, isCorrect ? 900 : 1800);
+  }
+  btn.onclick = check;
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter') check(); });
+  controls.appendChild(input);
+  controls.appendChild(btn);
+  input.focus();
 }
 
 function renderArticleQuestion(){
